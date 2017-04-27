@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+#
+# box - CLI for WPLib Box - https://github.com/wplib/wplib-box
+# 
+
+#Find the ROOR_DIR for the BOX CLI source
+if [ $(uname) = "Darwin" ] ; then
+	#This only works on Mac OSX
+	BOXCLI_ROOT_DIR=$(dirname $(readlink "$0"))
+else	
+	#This works on Ubuntu if realpath has been installed
+	BOXCLI_ROOT_DIR=$(dirname $(realpath "$0")) 
+fi	
+
+# Load BOXCLI_* functions and constants
+source "${BOXCLI_ROOT_DIR}/inc/funcs.sh"
+source "${BOXCLI_ROOT_DIR}/inc/const.sh"
+
+# Run reset script to ensure known bash environment
+source "${BOXCLI_INC_DIR}/reset.sh"
+
+# Grab 1st parameter as command, default to "help"
+BOXCLI_COMMAND="${1:-help}"
+
+cmd_script="${BOXCLI_CMD_DIR}/${BOXCLI_COMMAND}/${BOXCLI_COMMAND}.sh"
+
+#echo $cmd_script
+
+stdOut "Foobar"
+
+
