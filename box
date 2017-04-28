@@ -2,6 +2,9 @@
 #
 # box - CLI for WPLib Box - https://github.com/wplib/wplib-box
 # 
+# Initialize vars
+BOXCLI_INC_DIR=""
+BOXCLI_CLAUSES=()
 
 #Find the ROOR_DIR for the BOX CLI source
 if [ $(uname) = "Darwin" ] ; then
@@ -13,19 +16,80 @@ else
 fi	
 
 # Load BOXCLI_* functions and constants
+source "${BOXCLI_ROOT_DIR}/inc/const.sh" "${BOXCLI_ROOT_DIR}"
 source "${BOXCLI_ROOT_DIR}/inc/funcs.sh"
-source "${BOXCLI_ROOT_DIR}/inc/const.sh"
+_box_process_params "$@"
 
 # Run reset script to ensure known bash environment
 source "${BOXCLI_INC_DIR}/reset.sh"
 
 # Grab 1st parameter as command, default to "help"
-BOXCLI_COMMAND="${1:-help}"
+command="${1:-}"
+args=()
+argNames=()
+argNum=0
+path="${BOXCLI_ROOT_DIR}"
+if (( 0 < "${#BOXCLI_CLAUSES[@]}" )) ; then
+    for clause in "${BOXCLI_CLAUSES[@]}" ; do
+        testdir="${path}/cmd"
+        if ! [ -d "${testdir}" ] ; then
+            # If we don't have a command but we have an args
+            testdir="${path}/args"
+            if ! [ -d "${testdir}" ] ; then
+                stdErr "Arguments not allowed."
+                break
+            elif (( 0 == "${#args[@]}" )) ; then
+                for arg in $testdir/* ; do
+                    # example $arg: (A) "/.../3-abc=123" or (B) "/.../2-xyz"
+                    argName=$(basename "${arg}")
+                    order="${argName:0:1}"
+                    argName="${argName:2}"
+                    value="${argName#*=}"   # Get after "="
+                    name="${argName%=*}"    # Get upto "="
+                    [ "${argName}" = "${name}" ] && value=""  # clear out default if option (B).
+                    args+=($value)
+                    argNames+=($name)
+                done
+            fi
+            args[$argNum]="${clause}"
+            argNum=$((argNum+1))
+            if (( argNum > "${#args[@]}" )) ; then
+                stdErr "Too many arguments."
+                break
+            fi
+            continue
+        fi
+        filepath=""
+        testdir="${path}/cmd/${clause}"
+        if [ -d "${testdir}" ] ; then
+            path="${testdir}"
+            filepath="${testdir}/${clause}.sh"
+            continue
+        fi
+        for alias in $path/cmd/* ; do
+           testdir="${alias}/alias/${clause}"
+            if [ -f "${testdir}" ] ; then
+                segment=$(basename "${alias}")
+                path="${path}/cmd/${segment}"
+                filepath="${path}/cmd/${segment}/${segment}.sh"
+                valid=1
+                break
+            fi
+        done
+    done
+    if [ -z "${filepath}" ] ; then
+        stdErr "'$*' not a valid box command."
+        exit
+    fi
 
-cmd_script="${BOXCLI_CMD_DIR}/${BOXCLI_COMMAND}/${BOXCLI_COMMAND}.sh"
+    #printf '%s\n' "${argNames[@]}"
+    #printf '%s\n' "${args[@]}"
 
-#echo $cmd_script
+    BOXCLI_SCRIPT="${filepath}"
+    BOXCLI_ARGCOUNT=("${#args[@]}")
+    BOXCLI_ARGNAMES=("${argNames[@]}")
+    BOXCLI_ARGS=("${args[@]}")
 
-stdOut "Foobar"
+    source "${filepath}" "${BOXCLI_ARGS[@]}"
 
-
+fi
