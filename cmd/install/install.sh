@@ -1,5 +1,7 @@
-# Command install.sh
+#!/usr/bin/env bash
 #
-# box install
+# Command: install.sh
+# Usage: box install
+#
 
 stdOut "Installing WPLib Box..."

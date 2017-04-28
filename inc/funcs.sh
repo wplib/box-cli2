@@ -27,7 +27,12 @@ function isGuest {
 BOXCLI_CLAUSES=()
 BOXCLI_OPTIONS=()
 BOXCLI_IS_QUIET=""
+BOXCLI_IS_JSON=""
 
+function isJSON {
+    _testBoolOption "BOXCLI_IS_JSON" 'json'
+    return $?
+}
 function isQuiet {
     _testBoolOption "BOXCLI_IS_QUIET" 'q' 'quiet'
     return $?
