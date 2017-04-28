@@ -26,21 +26,30 @@ function isGuest {
 
 BOXCLI_CLAUSES=()
 BOXCLI_OPTIONS=()
+BOXCLI_IS_QUIET=""
 
 function isQuiet {
-    export BOXCLI_IS_QUIET="${BOXCLI_IS_QUIET:=!}"
-    if [ '!' = "${BOXCLI_IS_QUIET}" ] ; then
-        if (( 0 == "${#BOXCLI_OPTIONS[@]}" )) ; then
+    _testBoolOption "BOXCLI_IS_QUIET" 'q' 'quiet'
+    return $?
+}
+
+function _testBoolOption {
+    varName=$1
+    shift
+    if [ "" == "${!varName}" ] ; then
+        if [ "" == "${BOXCLI_OPTIONS}" ] ; then
+            eval $varName='!'
             return 1
         fi
-        for opt in "${BOXCLI_OPTIONS[@]}" ; do
-            case "${opt}" in
-                q|quiet)
-                BOXCLI_IS_QUIET="${opt}"
+        for option in "$@" ; do
+            if [[ "${BOXCLI_OPTIONS}" =~ "|${option}|" ]] ; then
+                eval $varName="${option}"
                 return 0
-                ;;
-            esac
+            fi
         done
+        return 1
+    fi
+    if [ "!" == "${!varName}" ] ; then
         return 1
     fi
     return 0
@@ -53,11 +62,24 @@ function _box_process_params {
                 arg=${arg:2}
             else
                 arg=${arg#"-"}
+                if [[ 1 < ${#arg} ]] ; then
+                    stdErr "Invalid option -${arg}. Did you mean --${arg}?"
+                    exit
+                fi
             fi
             BOXCLI_OPTIONS+=($arg)
         else
             BOXCLI_CLAUSES+=($arg)
         fi
     done
+    #
+    # TODO: Need to validate options at some point
+    #
+    if (( 0 == "${#BOXCLI_OPTIONS[@]}" )) ; then
+        BOXCLI_OPTIONS=""
+    else
+        BOXCLI_OPTIONS=$(IFS="|";echo "${BOXCLI_OPTIONS[*]}")
+        BOXCLI_OPTIONS="|${BOXCLI_OPTIONS}|"
+    fi
 }
 

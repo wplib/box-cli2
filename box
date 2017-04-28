@@ -87,9 +87,20 @@ if (( 0 < "${#BOXCLI_CLAUSES[@]}" )) ; then
 
     BOXCLI_SCRIPT="${filepath}"
     BOXCLI_ARGCOUNT=("${#args[@]}")
-    BOXCLI_ARGNAMES=("${argNames[@]}")
-    BOXCLI_ARGS=("${args[@]}")
 
-    source "${filepath}" "${BOXCLI_ARGS[@]}"
+    if (( 0 == "${#args[@]}" )) ; then
+        BOXCLI_ARGS=()
+    else
+        BOXCLI_ARGS=("${args[@]}")
+    fi
+
+    if (( 0 == "${#argNames[@]}" )) ; then
+        BOXCLI_ARGNAMES=()
+        source "${filepath}"
+    else
+        BOXCLI_ARGNAMES=("${argNames[@]}")
+        source "${filepath}" "${BOXCLI_ARGS[@]}"
+    fi
+
 
 fi
