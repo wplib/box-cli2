@@ -6,6 +6,10 @@
 BOXCLI_INC_DIR=""
 BOXCLI_CLAUSES=()
 
+if [ "" == "${BOXCLI_RECURSION}" ]; then 
+    export BOXCLI_RECURSION=0
+fi 
+
 #Find the ROOR_DIR for the BOX CLI source
 if [ $(uname) = "Darwin" ] ; then
 	#This only works on Mac OSX
@@ -64,6 +68,7 @@ if (( 0 < "${#BOXCLI_CLAUSES[@]}" )) ; then
         if [ -d "${testdir}" ] ; then
             path="${testdir}"
             filepath="${testdir}/${clause}.sh"
+            shift # remove command name from "$@"
             continue
         fi
         for alias in $path/cmd/* ; do
@@ -73,11 +78,13 @@ if (( 0 < "${#BOXCLI_CLAUSES[@]}" )) ; then
                 path="${path}/cmd/${segment}"
                 filepath="${path}/cmd/${segment}/${segment}.sh"
                 valid=1
+                shift # remove command name from "$@"
                 break
             fi
         done
     done
     if [ -z "${filepath}" ] ; then
+        IFS=' '
         stdErr "'$*' not a valid box command."
         exit
     fi
@@ -85,6 +92,7 @@ if (( 0 < "${#BOXCLI_CLAUSES[@]}" )) ; then
     #printf '%s\n' "${argNames[@]}"
     #printf '%s\n' "${args[@]}"
 
+    BOXCLI_PATH="${path}"
     BOXCLI_SCRIPT="${filepath}"
     BOXCLI_ARGCOUNT=("${#args[@]}")
 
@@ -94,13 +102,20 @@ if (( 0 < "${#BOXCLI_CLAUSES[@]}" )) ; then
         BOXCLI_ARGS=("${args[@]}")
     fi
 
+    ((BOXCLI_RECURSION++))
     if (( 0 == "${#argNames[@]}" )) ; then
         BOXCLI_ARGNAMES=()
         source "${filepath}"
     else
         BOXCLI_ARGNAMES=("${argNames[@]}")
-        source "${filepath}" "${BOXCLI_ARGS[@]}"
+        source "${filepath}" "$@"
+    fi
+    ((BOXCLI_RECURSION--))
+
+    if (( 0 == $BOXCLI_RECURSION )) ; then
+        stdOut "Done."
     fi
 
+    unset BOXCLI_RECURSION
 
 fi

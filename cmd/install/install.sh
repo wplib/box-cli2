@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
 #
-# Command: install.sh
-# Usage: box install
+# Command: box install <installable>
+# File: install.sh
 #
 
-stdOut "Installing WPLib Box..."
+installable="${BOXCLI_PATH}/installables/install-$1.sh"
+if [ ! -f "${installable}" ] ; then
+	stdErr "$1 is not a valid installable."
+else 
+	stdOut "Installing $1..."
+	source "${installable}"	
+fi	

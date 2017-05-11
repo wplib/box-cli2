@@ -18,11 +18,45 @@ function isHost {
 }
 
 function isGuest {
-    if [ $(uname) = "Darwin" ] ; then
+    if [ $(uname) = "Linux" ] ; then
+        return 0
+    fi
+    return 1
+}
+
+function readYes {
+    read -p "$* " yesno
+    if [[ "Yy" =~ "${yesno}" ]] ; then
+        return 0
+    fi
+    return 1
+}
+
+function readNo {
+    if readYes "$*" ; then
         return 1
     fi
     return 0
 }
+
+function pushDir {
+    pushd "$1" >/dev/null
+}
+function popDir {
+    popd  >/dev/null
+}
+
+function pushTmpDir {
+    rm -rf "$1"
+    mkdir -p "$1"
+    pushDir "$1" 
+}
+
+function popTmpDir {
+    popDir
+    rm -rf "$1"
+}
+
 
 BOXCLI_CLAUSES=()
 BOXCLI_OPTIONS=()
