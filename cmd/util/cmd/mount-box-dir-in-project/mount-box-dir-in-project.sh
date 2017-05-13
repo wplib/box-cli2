@@ -1,5 +1,5 @@
 #
-# Command: box util mount-box-project_dir-in-project <project_dir>
+# Command: box util mount-box-dir-in-project <project_dir>
 #
 
 mount_path="$1"

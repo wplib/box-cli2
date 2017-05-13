@@ -1,5 +1,12 @@
 # funcs.sh
 
+function toLowerCase {
+    echo "$1" | tr '[:upper:]' '[:lower:]'
+}
+
+function findProjectFile {
+    echo "$(box util find-project-file)"
+}
 
 function findProjectDir {
     echo "$(box util find-project-dir)"
@@ -20,10 +27,24 @@ function popProjectDir {
 }
 
 function hasProjectDir {
-    if [[ "$(box util find-project-dir)" =~ "No project.json found" ]] ; then
+    if [[ "$(findProjectDir)" =~ "No project.json found" ]] ; then
         return 1
     fi
     return 0
+}
+
+function hasProjectFile {
+    if [[ "$(findProjectFile)" =~ "No project.json found" ]] ; then
+        return 1
+    fi
+    return 0
+}
+
+function noArgsPassed {
+    if [ "0" == "${#BOXCLI_ARGS[@]}" ] ; then
+        return 0
+    fi
+    return 1
 }
 
 function cmdExists {
@@ -35,12 +56,12 @@ function cmdExists {
 
 function stdOut {
     if ! isQuiet ; then
-        echo "$1"
+        echo -e "$1"
     fi
 }
 
 function stdErr {
-    echo "$1"
+    echo -e "$1"
 }
 
 function isHost {
