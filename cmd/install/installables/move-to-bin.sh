@@ -9,9 +9,9 @@ destination="${destination_dir}/${destination_file}"
 
 stdOut "Moving ${source_file} to ${destination}..."
 
-#sudo rm -f "${destination}"
+sudo rm -f "${destination}"
 
-#sudo mv "${source_file}" "${destination}"
+sudo mv "${source_file}" "${destination}"
 
-#sudo chmod +x "${destination}"
+sudo chmod +x "${destination}"
 

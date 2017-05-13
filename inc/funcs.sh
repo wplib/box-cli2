@@ -1,5 +1,38 @@
 # funcs.sh
 
+
+function findProjectDir {
+    echo "$(box util find-project-dir)"
+}
+
+function pushProjectDir {
+    local project_dir="$(box util find-project-dir)"
+    if ! hasProjectDir ; then 
+        echo "${project_dir}"
+        exit
+    fi
+    pushDir "${project_dir}"
+}
+
+function popProjectDir {
+    local project_dir="$(box util find-project-dir)"
+    popDir "${project_dir}"    
+}
+
+function hasProjectDir {
+    if [[ "$(box util find-project-dir)" =~ "No project.json found" ]] ; then
+        return 1
+    fi
+    return 0
+}
+
+function cmdExists {
+    if [ "" == "$(command -v $1)" ] ; then
+        return 1
+    fi
+    return 0
+}
+
 function stdOut {
     if ! isQuiet ; then
         echo "$1"
@@ -40,7 +73,13 @@ function readNo {
 }
 
 function pushDir {
-    pushd "$1" >/dev/null
+    local dir
+    if [ "$#" -eq 0 ] ; then
+        dir="$(pwd)"
+    else
+        dir="$1"
+    fi
+    pushd "${dir}" >/dev/null
 }
 function popDir {
     popd  >/dev/null
@@ -62,6 +101,12 @@ BOXCLI_CLAUSES=()
 BOXCLI_OPTIONS=()
 BOXCLI_IS_QUIET=""
 BOXCLI_IS_JSON=""
+BOXCLI_IS_COMPOSER=""
+
+function isComposer {
+    _testBoolOption "BOXCLI_IS_COMPOSER" 'composer'
+    return $?
+}
 
 function isJSON {
     _testBoolOption "BOXCLI_IS_JSON" 'json'
