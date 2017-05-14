@@ -2,16 +2,35 @@
 # Command: box util test [<arg>]
 #
 
+project_dir="$(findProjectDir)"
+webroot_path="$(getWebrootPath)"
+
 tmp_dir="/tmp/boxcli/snapshots/tmp"
 mkdir -p "${tmp_dir}"
 
-snapshot_file="site-archive-rentblog-live-2017-05-13-3am-UTC.zip"
-unzip -qq "${project_dir}/snapshots/${snapshot_file}"  -d "${tmp_dir}"
 
-rsync -avz --no-perms --no-owner --no-group --ignore-existing -q "${tmp_dir}/" "${project_dir}/www"
+cd "${project_dir}"
 
-cd "${project_dir}/www"
+if [ -d "${webroot_path}" ] ; then 
+	if ! box archive webroot ; then
+		exit 1
+	fi
+fi
 
+mkdir -p sql
+
+mkdir -p "${webroot_path}"
+
+unzip -qq -n "${project_dir}/snapshots/${snapshot_file}" -d "${tmp_dir}" -x "wp-content/uploads/*"
+
+rsync -avz --no-perms --no-owner --no-group --ignore-existing -q "${tmp_dir}/" "${webroot_path}"
+
+rm -rf "${tmp_dir}"
+
+mv "${webroot_path}/wp-content/mysql.sql" "sql/initial.sql"
+
+
+cd www
 mkdir -p wp
 mv wp-admin/    wp/wp-admin
 mv wp-includes/ wp/wp-includes
@@ -23,7 +42,6 @@ rm license.txt
 rm readme.html
 rm xmlrpc.php
 rm wp-config-sample.php
-
 
 mv wp-*.php wp
 mv wp/wp-config.php .

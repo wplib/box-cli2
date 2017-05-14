@@ -21,6 +21,8 @@ fi
 
 # Load BOXCLI_* functions and constants
 source "${BOXCLI_ROOT_DIR}/inc/const.sh" "${BOXCLI_ROOT_DIR}"
+mkdir -p "${BOXCLI_TMP_DIR}"
+
 source "${BOXCLI_ROOT_DIR}/inc/funcs.sh"
 _box_process_params "$@"
 

@@ -4,6 +4,7 @@
 
 # Set Bash Strict Mode (Unofficial) 
 # See http://redsymbol.net/articles/unofficial-bash-strict-mode/
+# See http://stackoverflow.com/a/1379904/102699
 set -euo pipefail
 IFS=$'\n\t'
 

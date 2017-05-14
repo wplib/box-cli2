@@ -1,7 +1,59 @@
 # funcs.sh
 
+
+function isZipFile {
+    if [ "zip" == "$(getFileExtension "$1")" ] ; then
+        return 0
+    fi
+    return 1
+}
+
+function fileExists {
+    if [ -f "$1" ] ; then
+        return 0
+    fi
+    return 1
+}
+
+function isEmpty {
+    if [ "" == "$1" ] ; then
+        return 0
+    fi
+    return 1
+}
+
+#
+# Return file extension, converting to lowercase for easy comparison
+#
+function getFileExtension {
+    echo "$(toLowerCase "$(getFileExtensionRaw "${1}")")"
+}
+
+#
+# Return raw file extension (RAW = Do not convert to lowercase)
+#
+function getFileExtensionRaw {
+    echo "${1##*.}"
+}
+
 function toLowerCase {
     echo "$1" | tr '[:upper:]' '[:lower:]'
+}
+
+function getContentDir {
+    echo "$(box util get-content-dir)"
+}
+
+function getContentPath {
+    echo "$(box util get-content-path)"
+}
+
+function getWebrootDir {
+    echo "$(box util get-webroot-dir)"
+}
+
+function getWebrootPath {
+    echo "$(box util get-webroot-path)"
 }
 
 function findProjectFile {
@@ -15,15 +67,14 @@ function findProjectDir {
 function pushProjectDir {
     local project_dir="$(box util find-project-dir)"
     if ! hasProjectDir ; then 
-        echo "${project_dir}"
-        exit
+        stdErr "${project_dir}"
+        exit 1
     fi
     pushDir "${project_dir}"
 }
 
 function popProjectDir {
-    local project_dir="$(box util find-project-dir)"
-    popDir "${project_dir}"    
+    popDir "$(box util find-project-dir)"
 }
 
 function hasProjectDir {
@@ -79,7 +130,7 @@ function isGuest {
 }
 
 function readYes {
-    read -p "$* " yesno
+    read -p "$* [yN]? " yesno
     if [[ "Yy" =~ "${yesno}" ]] ; then
         return 0
     fi
