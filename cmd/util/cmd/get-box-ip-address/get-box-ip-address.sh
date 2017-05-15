@@ -1,6 +1,10 @@
 #
 # Command: box util get-box-ip-address
 #
+# @TODO generate IP address file if not exists. 
+# @TODO box util read-box-ip-address should be raw, no creation
+# @SEE http://stackoverflow.com/questions/8988824/generating-random-number-between-1-and-10-in-bash-shell-script
+#
 
 ip_address="$(box util read-project-file ".box.ip_address")" 
 
