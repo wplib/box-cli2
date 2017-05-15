@@ -11,5 +11,8 @@ BOXCLI_IS_QUIET=""
 BOXCLI_IS_JSON=""
 BOXCLI_IS_COMPOSER=""
 
+# Define later, for optimizing 'box util get-project-dir'
+BOXCLI_PROJECT_DIR=""
+
 BOXCLI_CLAUSES=()
 BOXCLI_OPTIONS=()

@@ -2,6 +2,11 @@
 # Command: box util get-webroot-path
 #
 
-echo "$(box util read-project-file ".site.webroot_path")" 
+local="$(box util get-project-info ".hosts.roles.local")"
+
+webroot_path="$(box util get-project-info ".hosts.list.${local}.webroot_path")" 
+
+stdOut "${webroot_path}"
+
 exit
 

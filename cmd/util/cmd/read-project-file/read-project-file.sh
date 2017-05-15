@@ -1,8 +1,13 @@
 #
 # Command: box util read-project-dir
 #
-
+query="$1"
 project_file=$(box util find-project-file)
-jq -r "$1" "${project_file}"
-exit
+result="$(jq -r "${query}" "${project_file}")"
+if [ "null" == "${result}" ] ; then
+	result=""
+fi
+if ! isEmpty "${result}" ; then 
+	stdOut "${result}"
+fi
 

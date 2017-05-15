@@ -1,5 +1,13 @@
 # funcs.sh
 
+function isNull {
+    if [ "zip" == "$(getFileExtension "$1")" ] ; then
+        return 0
+    fi
+    return 1
+}
+
+
 
 function isZipFile {
     if [ "zip" == "$(getFileExtension "$1")" ] ; then
