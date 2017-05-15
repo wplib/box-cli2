@@ -1,0 +1,3 @@
+x = "{{.box.version}}"
+y = 10
+z =  "{{.hosts.list.{{.hosts.roles.local}}.domain}}"

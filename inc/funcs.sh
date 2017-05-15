@@ -1,13 +1,54 @@
 # funcs.sh
 
+#
+# Parses templates that contain {{.jq.queries}} into project.json
+# Queries can be nested but nest should have default value, e.g. {{foo.{{.abc=bar}}.baz}}.
+# But there is no looping at this point and no supplied values (yet)
+#
+function parseTemplate {
+    local template="$1"
+    local left
+    local right
+    local query
+    local value
+    if [[ "${template}" =~ ^(.*)}}(.*)$ ]] ; then
+        left="${BASH_REMATCH[1]}"
+        right="${BASH_REMATCH[2]}"
+        left="$(parseTemplate "${left}")"
+        stdOut "$(parseTemplate "${left}${right}")"
+        return
+    fi
+    if [[ "${template}" =~ ^(.*){{(.*)$ ]] ; then
+        left="${BASH_REMATCH[1]}"
+        right="${BASH_REMATCH[2]}"
+        right="$(parseTemplate "${right}")"
+        stdOut "${left}${right}"
+        return
+    fi
+    if [[ "${template}" =~ ^(\.[\.a-z_=]+)$ ]] ; then
+        if [[ "${template}" == *"="* ]] ; then 
+            query="${template%=*}"
+            value="${template#*=}"
+        else 
+            query="${template}"
+            value=""
+        fi
+        result="$(box util read-project-file "${query}")"
+        if isEmpty "${result}" ; then
+            result="${value}"
+        fi
+        stdOut "${result}"
+        return
+    fi
+    stdOut "${template}"
+}
+
 function isNull {
     if [ "zip" == "$(getFileExtension "$1")" ] ; then
         return 0
     fi
     return 1
 }
-
-
 
 function isZipFile {
     if [ "zip" == "$(getFileExtension "$1")" ] ; then
@@ -34,50 +75,58 @@ function isEmpty {
 # Return file extension, converting to lowercase for easy comparison
 #
 function getFileExtension {
-    echo "$(toLowerCase "$(getFileExtensionRaw "${1}")")"
+    stdOut "$(toLowerCase "$(getFileExtensionRaw "${1}")")"
 }
 
 #
 # Return raw file extension (RAW = Do not convert to lowercase)
 #
 function getFileExtensionRaw {
-    echo "${1##*.}"
+    stdOut "${1##*.}"
 }
 
 function toLowerCase {
-    echo "$1" | tr '[:upper:]' '[:lower:]'
+    stdOut "$1" | tr '[:upper:]' '[:lower:]'
+}
+
+function getLocalDomain {
+    stdOut "$(box util get-local-domain)"
 }
 
 function getContentDir {
-    echo "$(box util get-content-dir)"
+    stdOut "$(box util get-content-dir)"
 }
 
 function getContentPath {
-    echo "$(box util get-content-path)"
+    stdOut "$(box util get-content-path)"
 }
 
 function getWebrootDir {
-    echo "$(box util get-webroot-dir)"
+    stdOut "$(box util get-webroot-dir)"
 }
 
 function getWebrootPath {
-    echo "$(box util get-webroot-path)"
+    stdOut "$(box util get-webroot-path)"
+}
+
+function getProjectDir {
+    stdOut "$(box util get-project-dir)"
+}
+
+function getProjectFile {
+    stdOut "$(box util get-project-file)"
 }
 
 function findProjectFile {
-    echo "$(box util find-project-file)"
+    stdOut "$(box util find-project-file)"
 }
 
 function findProjectDir {
-    echo "$(box util find-project-dir)"
+    stdOut "$(box util find-project-dir)"
 }
 
 function pushProjectDir {
-    local project_dir="$(box util find-project-dir)"
-    if ! hasProjectDir ; then 
-        stdErr "${project_dir}"
-        exit 1
-    fi
+    local project_dir="$(box util get-project-dir)"
     pushDir "${project_dir}"
 }
 
@@ -86,14 +135,14 @@ function popProjectDir {
 }
 
 function hasProjectDir {
-    if [[ "$(findProjectDir)" =~ "No project.json found" ]] ; then
+    if [[ "" == "$(findProjectDir)" ]] ; then
         return 1
     fi
     return 0
 }
 
 function hasProjectFile {
-    if [[ "$(findProjectFile)" =~ "No project.json found" ]] ; then
+    if [[ "" == "$(findProjectFile)" ]] ; then
         return 1
     fi
     return 0
@@ -113,6 +162,10 @@ function cmdExists {
     return 0
 }
 
+function statusMsg {
+    stdOut "$1"
+}
+
 function stdOut {
     if ! isQuiet ; then
         echo -e "$1"
@@ -120,7 +173,7 @@ function stdOut {
 }
 
 function stdErr {
-    echo -e "$1"
+    echo -e "$1" 1>&2
 }
 
 function isHost {

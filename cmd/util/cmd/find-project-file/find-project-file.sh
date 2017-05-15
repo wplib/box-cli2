@@ -3,6 +3,8 @@
 #
 
 project_dir="$(box util find-project-dir)"
-echo "${project_dir}/project.json" 
+if ! isEmpty "${project_dir}" ; then
+	echo "${project_dir}/project.json" 
+fi	
 exit
 
