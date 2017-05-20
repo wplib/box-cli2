@@ -1,5 +1,7 @@
 # funcs.sh
 
+source "${BOXCLI_INC_DIR}/params.sh"
+
 #
 # Parses templates that contain {{.jq.queries}} into project.json
 # Queries can be nested but nest should have default value, e.g. {{foo.{{.abc=bar}}.baz}}.
@@ -228,75 +230,3 @@ function popTmpDir {
     popDir
     rm -rf "$1"
 }
-
-
-BOXCLI_CLAUSES=()
-BOXCLI_OPTIONS=()
-BOXCLI_IS_QUIET=""
-BOXCLI_IS_JSON=""
-BOXCLI_IS_COMPOSER=""
-
-function isComposer {
-    _testBoolOption "BOXCLI_IS_COMPOSER" 'composer'
-    return $?
-}
-
-function isJSON {
-    _testBoolOption "BOXCLI_IS_JSON" 'json'
-    return $?
-}
-function isQuiet {
-    _testBoolOption "BOXCLI_IS_QUIET" 'q' 'quiet'
-    return $?
-}
-
-function _testBoolOption {
-    varName=$1
-    shift
-    if [ "" == "${!varName}" ] ; then
-        if [ "" == "${BOXCLI_OPTIONS}" ] ; then
-            eval $varName='!'
-            return 1
-        fi
-        for option in "$@" ; do
-            if [[ "${BOXCLI_OPTIONS}" =~ "|${option}|" ]] ; then
-                eval $varName="${option}"
-                return 0
-            fi
-        done
-        return 1
-    fi
-    if [ "!" == "${!varName}" ] ; then
-        return 1
-    fi
-    return 0
-}
-
-function _box_process_params {
-    for arg in "$@" ; do
-        if [[ $arg == -* ]] ; then
-            if [[ "--" == "${arg:0:2}" ]] ; then
-                arg=${arg:2}
-            else
-                arg=${arg#"-"}
-                if [[ 1 < ${#arg} ]] ; then
-                    stdErr "Invalid option -${arg}. Did you mean --${arg}?"
-                    exit
-                fi
-            fi
-            BOXCLI_OPTIONS+=($arg)
-        else
-            BOXCLI_CLAUSES+=($arg)
-        fi
-    done
-    #
-    # TODO: Need to validate options at some point
-    #
-    if (( 0 == "${#BOXCLI_OPTIONS[@]}" )) ; then
-        BOXCLI_OPTIONS=""
-    else
-        BOXCLI_OPTIONS=$(IFS="|";echo "${BOXCLI_OPTIONS[*]}")
-        BOXCLI_OPTIONS="|${BOXCLI_OPTIONS}|"
-    fi
-}
-

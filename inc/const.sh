@@ -1,4 +1,6 @@
 # constants.sh
+BOXCLI_BOX_VER="0.15.0"
+
 BOXCLI_ROOT_DIR="$1"
 BOXCLI_INC_DIR="${BOXCLI_ROOT_DIR}/inc"
 BOXCLI_LIB_DIR="${BOXCLI_ROOT_DIR}/lib"
@@ -15,5 +17,14 @@ BOXCLI_IS_COMPOSER=""
 # Define later, for optimizing 'box util get-project-dir'
 BOXCLI_PROJECT_DIR=""
 
+
+# Clause names
 BOXCLI_CLAUSES=()
+# Option names
 BOXCLI_OPTIONS=()
+# Option values
+BOXCLI_OPTVALS=()
+# Valid Options
+BOXCLI_VALOPTS=()
+# Options surrounded/separated by '|'
+BOXCLI_OPT_STR=""
