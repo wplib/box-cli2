@@ -20,5 +20,33 @@ if isEmpty "${json}" ; then
 	return 1
 fi
 
+pushProjectDir
+project_dir="$(pwd)"
+webroot_path="$(getWebrootPath)"
+while 
+	if [ ! -d "${webroot_path}" ] ; then 
+		break
+	fi
+	if [ "" == "$(ls "${webroot_path}")" ] ; then 
+		break
+	fi
+	if ! box archive webroot ; then
+		exit 1
+	fi
+	sudo rm -rf "${webroot_path}"
+	if ! box archive webroot ; then
+		exit 1
+	fi
+do false ; done
+
+popProjectDir
+
 echo -e $json
 exit
+
+
+
+
+tmp_dir="/tmp/boxcli/snapshots/tmp"
+mkdir -p "${tmp_dir}"
+

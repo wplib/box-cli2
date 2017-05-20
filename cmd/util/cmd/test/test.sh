@@ -52,3 +52,15 @@ sed -i.bak 's/0.13.0/0.14.0' index.php
 
 rm *.bak
 
+
+
+
+
+
+# Get the Box IP
+#box_ip_file="$(pwd)/IP"
+#box_ip="$(if [ -f "${box_ip_file}" ] ; then cat "${box_ip_file}" ; fi)"
+#if [ -n "${box_ip}" ] ; then 
+#	project_json+=",\n\t\"box\": {\n\t\t\"ip_address\": \"${box_ip}\"\n\t}"
+#fi
+

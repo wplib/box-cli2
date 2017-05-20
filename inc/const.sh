@@ -26,5 +26,7 @@ BOXCLI_OPTIONS=()
 BOXCLI_OPTVALS=()
 # Valid Options
 BOXCLI_VALOPTS=()
+# Valid Option Value Expected
+BOXCLI_VALEXP=()
 # Options surrounded/separated by '|'
 BOXCLI_OPT_STR=""
