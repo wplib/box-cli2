@@ -28,7 +28,7 @@ else
 		delete_webroot="yes"
 	fi
 	archive_file="${webroot_path/\//-}-archive-${suffix}.zip"
-	tmp_filepath="${BOXCLI_TMP_DIR}/${archive_file}"
+	tmp_filepath="${BOXCLI_TEMP_DIR}/${archive_file}"
 	#
 	# -r: Recursive into sudirectories
 	# -m: Move into archive_file (delete original files)

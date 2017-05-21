@@ -1,7 +1,12 @@
 # funcs.sh
 
-source "${BOXCLI_INC_DIR}/params.sh"
-source "${BOXCLI_INC_DIR}/templates.sh"
+
+source "${BOXCLI_INCLUDE_DIR}/params.sh"
+source "${BOXCLI_INCLUDE_DIR}/templates.sh"
+
+function getBoxCliRootDir {
+    echo "${BOXCLI_ROOT_DIR}"
+}
 
 function isNull {
     if [ "zip" == "$(getFileExtension "$1")" ] ; then

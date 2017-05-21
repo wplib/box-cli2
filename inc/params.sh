@@ -2,54 +2,55 @@
 
 # Clause names
 BOXCLI_CLAUSES=()
-# Option names
-BOXCLI_OPTIONS=()
-# Option values
-BOXCLI_OPTVALS=()
-# Valid Options
-BOXCLI_VALOPTS=()
-# Valid Option Value Expected
-BOXCLI_VALEXP=()
-# Options surrounded/separated by '|'
-BOXCLI_OPT_STR=""
-# Valid Options surrounded/separated by '|'
-BOXCLI_VO_STR="|"
+# Switch names
+BOXCLI_SWITCHES=()
+# Switch values
+BOXCLI_SWITCH_VALUES=()
+# Valid Switchs
+BOXCLI_VALID_SWITCHES=()
+# Valid Switch Value Expected
+BOXCLI_BOOLEAN_SWITCHES=()
+# Switchs surrounded/separated by '|'
+BOXCLI_SWITCHES_STR=""
+# Valid Switchs surrounded/separated by '|'
+BOXCLI_VALID_SWITCHES_STR="|"
 
 BOXCLI_IS_QUIET=""
 BOXCLI_IS_JSON=""
 BOXCLI_IS_COMPOSER=""
 
 function isComposer {
-    _testBoolOption "BOXCLI_IS_COMPOSER" 'composer'
+    testYesNoSwitch "BOXCLI_IS_COMPOSER" 'composer'
     return $?
 }
 
 function isJSON {
-    _testBoolOption "BOXCLI_IS_JSON" 'json'
-    return $?
-}
-function isQuiet {
-    _testBoolOption "BOXCLI_IS_QUIET" 'q' 'quiet'
+    testYesNoSwitch "BOXCLI_IS_JSON" 'json'
     return $?
 }
 
-function hasOptionValue {
-    value="$(getOptionValue "$1")"
+function isQuiet {
+    testYesNoSwitch "BOXCLI_IS_QUIET" 'quiet'
+    return $?
+}
+
+function hasSwitchValue {
+    value="$(getSwitchValue "$1")"
     if [ "" != "${value}" ] ; then
         return 0
     fi
     return 1
 }
 
-function getOptionValue {
-    local option="$(echo "$1" | sed 's/_/-/g')"
+function getSwitchValue {
+    local switch="$(echo "$1" | sed 's/_/-/g')"
     local i=0
     local value=""
     local default="$(if [ $# -ge 2 ] ; then echo "$2" ; fi)"
-    for test_option in "${BOXCLI_OPTIONS[@]}" ; do
-        temp="${BOXCLI_OPTVALS[${i}]}"
+    for test_switch in "${BOXCLI_SWITCHES[@]}" ; do
+        temp="${BOXCLI_SWITCH_VALUES[${i}]}"
         i=$((i+1))
-        [ "${option}" != "${test_option}" ] && continue
+        [ "${switch}" != "${test_switch}" ] && continue
         value="${temp}"
         break
     done
@@ -59,86 +60,91 @@ function getOptionValue {
     echo "${value}"
 }
 
-function _testBoolOption {
+function testYesNoSwitch {
     local varName=$1
     shift
     if [ "" == "${!varName}" ] ; then
-        if [ "" == "${BOXCLI_OPT_STR}" ] ; then
+        if [ "" == "${BOXCLI_SWITCHES_STR}" ] ; then
             #
-            # "!" is a flag character to indicate option not set
+            # "!" is a flag character to indicate switch not set
             # See below for comparison to "!"
             #
-            eval $varName='!'
+            eval $varName="no"
             return 1
         fi
-        for option in "$@" ; do
-            if [[ "${BOXCLI_OPT_STR}" =~ "|${option}|" ]] ; then
-                eval $varName="${option}"
+        for switch in "$@" ; do
+            if [[ "${BOXCLI_SWITCHES_STR}" =~ "|${switch}|" ]] ; then
+                eval $varName="yes"
                 return 0
             fi
         done
         return 1
     fi
 
-    if [ "!" == "${!varName}" ] ; then
-        return 1
+    if [ "yes" == "${!varName}" ] ; then
+        return 0
     fi
-    return 0
+    return 1
 }
 
-function _box_process_params {
-    local arg
-    local opt
-    local exp
-    local val
-    local i
-    local cmd_path="${BOXCLI_ROOT_DIR}"
-    local last_path=""
-    for arg in "$@" ; do
-        if [ "${cmd_path}" != "${last_path}" ] ; then
-            last_path="${cmd_path}"
-            for opt in "${cmd_path}"/opts/* ; do 
-                # Collect valid options
-                opt="$(basename "${opt}")"
-                if [[ "--" != "${opt:0:2}" ]] ; then
+function __boxProcessCmdLine {
+    local __arg
+    local __switch
+    local __is_bool
+    local __val
+    local __i
+    local __cmdPath="$(getBoxCliRootDir)"
+    local __lastPath=""
+    local __tst_path
+    for __arg in "$@" ; do
+        if [ "${__cmdPath}" != "${__lastPath}" ] ; then
+            __lastPath="${__cmdPath}"
+            for __switch in "${__cmdPath}"/switches/* ; do
+                # Collect valid switches
+                __switch="$(basename "${__switch}")"
+                if [[ "*" == "${__switch}" ]] ; then
                     continue
                 fi
-                opt="${opt:2}"
-                if [[ "${opt}" == *"="* ]] ; then
-                    # Is a value expected?
-                    opt=${opt%=*}
-                    exp=1
-                else
-                    exp=0
+                if [[ "--" != "${__switch:0:2}" ]] ; then
+                    continue
                 fi
-                BOXCLI_VALOPTS+=("${opt}")
-                BOXCLI_VALEXP+=("${exp}")
-                BOXCLI_VO_STR+="${opt}|"
+                # Remove leading "--"
+                __switch="${__switch:2}"
+                if [[ "${__switch}" == *"="* ]] ; then
+                    # Is a value expected?
+                    __switch=${__switch%=*}
+                    __is_bool="no"
+                else
+                    __is_bool="yes"
+                fi
+                BOXCLI_VALID_SWITCHES+=("${__switch}")
+                BOXCLI_BOOLEAN_SWITCHES+=("${__is_bool}")
+                BOXCLI_VALID_SWITCHES_STR+="${__switch}|"
             done
         fi
-        if [[ $arg == -* ]] ; then
-            val=''
-            if [[ "--" == "${arg:0:2}" ]] ; then
-                arg=${arg:2}
-                if [[ "${arg}" == *"="* ]] ; then
-                    val="${arg#*=}"
-                    arg="${arg%=*}"
+        if [[ $__arg == -* ]] ; then
+            __val=''
+            if [[ "--" == "${__arg:0:2}" ]] ; then
+                __arg=${__arg:2}
+                if [[ "${__arg}" == *"="* ]] ; then
+                    __val="${__arg#*=}"
+                    __arg="${__arg%=*}"
                 fi
-                if ! [[ "${BOXCLI_VO_STR}" =~ "|${arg}|" ]] ; then
-                    stdErr "Invalid option --${arg}"
+                if ! [[ "${BOXCLI_VALID_SWITCHES_STR}" =~ "|${__arg}|" ]] ; then
+                    stdErr "Invalid switch --${__arg}"
                     exit 1
                 fi
-                local i=0
-                for opt in "${BOXCLI_VALOPTS[@]}" ; do
-                    exp="${BOXCLI_VALEXP[${i}]}"
-                    i=$((i+1))
-                    [ "${opt}" != "${arg}" ] && continue
-                    if [[ "1" == "${exp}" && "" == "${val}" ]] ; then
-                        stdErr "Option \"${arg}\" expects a value in the form:"
+                local __i=0
+                for __switch in "${BOXCLI_VALID_SWITCHES[@]}" ; do
+                    __is_bool="${BOXCLI_BOOLEAN_SWITCHES[${__i}]}"
+                    __i=$((__i+1))
+                    [ "${__switch}" != "${__arg}" ] && continue
+                    if [[ "yes" == "${__is_bool}" && "" == "${__val}" ]] ; then
+                        stdErr "Switch \"${__arg}\" expects a value in the form:"
                         stdErr ""
-                        stdErr "\t--${arg}=example" 
+                        stdErr "\t--${__arg}=example"
                         stdErr "Or:" 
-                        stdErr "\t--${arg}=\"Foo Bar\"" 
+                        stdErr "\t--${__arg}=\"Foo Bar\""
                         stdErr ""
                         stdErr "Note: No spaces around the equal (\"=\") sign."
                         exit 1
@@ -146,34 +152,33 @@ function _box_process_params {
                 done
 
             else
-                arg=${arg#"-"}
-                if [[ 1 < ${#arg} ]] ; then
-                    stdErr "Invalid option -${arg}. Did you mean --${arg}?"
+                __arg=${__arg#"-"}
+                if [[ 1 < ${#__arg} ]] ; then
+                    stdErr "Invalid switch -${__arg}. Did you mean --${__arg}?"
                     exit 1
                 fi
             fi
             # echo "Arg: $arg"
             # echo "Val: $val"
             # echo "---"
-            BOXCLI_OPTIONS+=("${arg}")
-            BOXCLI_OPTVALS+=("${val}")
+            BOXCLI_SWITCHES+=("${__arg}")
+            BOXCLI_SWITCH_VALUES+=("${__val}")
         else
-            BOXCLI_CLAUSES+=($arg)
-            tst_path="${cmd_path}/cmd/${arg}"
-            if [ -d "${tst_path}" ] ; then
-                cmd_path="${tst_path}"
+            BOXCLI_CLAUSES+=($__arg)
+            __tst_path="${__cmdPath}/cmd/${__arg}"
+            if [ -d "${__tst_path}" ] ; then
+                __cmdPath="${__tst_path}"
             fi
         fi
     done
 
     #
-    # TODO: Need to validate options at some point
+    # TODO: Need to validate args at some point
     #
-    if (( 0 == "${#BOXCLI_OPTIONS[@]}" )) ; then
-        BOXCLI_OPT_STR=""
+    if (( 0 == "${#BOXCLI_SWITCHES[@]}" )) ; then
+        BOXCLI_SWITCHES_STR=""
     else
-        BOXCLI_OPT_STR=$(IFS="|";echo "${BOXCLI_OPTIONS[*]}")
-        BOXCLI_OPT_STR="|${BOXCLI_OPT_STR}|"
+        BOXCLI_SWITCHES_STR="|$(IFS="|";echo "${BOXCLI_SWITCHES[*]}")|"
     fi
 }
 

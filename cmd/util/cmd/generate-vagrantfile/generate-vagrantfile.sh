@@ -15,7 +15,7 @@ if [ -f "${vagrant_file}" ] ; then
 	fi
 fi	
 
-tmp_file="${BOXCLI_TMP_DIR}/Vagrantfile"
+tmp_file="${BOXCLI_TEMP_DIR}/Vagrantfile"
 
 box util load-template "Vagrantfile" > $tmp_file
 

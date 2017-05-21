@@ -14,7 +14,7 @@ else
 	fi
 fi
 
-for recognizer in "${BOXCLI_REC_DIR}"/* ; do
+for recognizer in "${BOXCLI_RECOGNIZER_DIR}"/* ; do
 	result="$(source "${recognizer}" "${filepath}")"
 	if ! isEmpty "${result}" ; then
 		stdOut "${result}"

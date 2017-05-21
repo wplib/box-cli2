@@ -8,7 +8,7 @@
 # Atternate: https://github.com/tests-always-included/mo/blob/master/mo
 #
 
-template_file="${BOXCLI_TPL_DIR}/$1.template"
+template_file="${BOXCLI_TEMPLATE_DIR}/$1.template"
 
 if [ ! -f "${template_file}" ] ; then
 	stdErr "The template [${template_file}] does not exist."

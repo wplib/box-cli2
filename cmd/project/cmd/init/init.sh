@@ -14,7 +14,7 @@ if ! noArgsPassed ; then
 	name="$1"
 fi
 
-box_domain="$(toLowerCase "$(sanitizeDomain "$(getOptionValue "box-domain" "${name:=wplib.box}")")")"
+box_domain="$(toLowerCase "$(sanitizeDomain "$(getSwitchValue "box-domain" "${name:=wplib.box}")")")"
 
 if strContains "${name}" "." ; then
 	project_name="$(stripExtension "${name}")"
@@ -29,27 +29,28 @@ else
 	box_domain+="${BOXCLI_DEFAULT_LOCAL_TLD}"
 fi
 
-if hasOptionValue "project-slug" ; then 
-	project_slug="$(getOptionValue "project-slug")"
+if hasSwitchValue "project-slug" ; then
+	project_slug="$(getSwitchValue "project-slug")"
 fi
 
-if hasOptionValue "project-name" ; then 
-	project_name="$(getOptionValue "project-name")"
+if hasSwitchValue "project-name" ; then
+	project_name="$(getSwitchValue "project-name")"
 fi
 project_name="$(toProperCase "${project_name}")"
 
 
-project_id="$(sanitizeIdentifier "$(getOptionValue "project-id" "${project_slug}")")"
-project_slug="$(toLowerCase "$(getOptionValue "project-slug" "${project_id}")")"
+shortname="$(sanitizeIdentifier "$(getSwitchValue "shortname" "${project_slug}")")"
+project_slug="$(toLowerCase "$(getSwitchValue "project-slug" "${shortname}")")"
 
 project_type="${project_type:-site}"
 
-
-echo "Project ID:   $project_id"
-echo "Project Name: $project_name"
-echo "Project Slug: $project_slug"
-echo "Project Type: $project_type"
-echo "Box Domain:   $box_domain"
+stdOut "Initializing project..."
+stdOut ""
+stdOut "\tBox Domain:   $box_domain"
+stdOut "\tProject Name: $project_name"
+stdOut "\tShortname:    $shortname"
+stdOut "\tProject Slug: $project_slug"
+stdOut "\tProject Type: $project_type"
 
 
 exit
@@ -59,7 +60,6 @@ exit
 
 # Start building up the JSON file
 project_json="{${t1}\"name\": \"${project_name}\""
-stdOut "Initializing project ${project_name}..."
 
 project_name="$1"
 
@@ -89,8 +89,8 @@ project_json+=",${t1}\"site\": {${t2}\"theme\": \"${site_theme}\"${t1}}"
 #
 # Set the box version
 #
-box_ver="${box_ver:-${BOXCLI_BOX_VER}}"
-project_json+=",${t1}\"box\": {${t2}\"version\": \"${box_ver}\"${t1}}"
+box_version="${box_version:-${BOXCLI_BOX_VERSION}}"
+project_json+=",${t1}\"box\": {${t2}\"version\": \"${box_version}\"${t1}}"
 
 
 #
@@ -104,9 +104,9 @@ local_domain="${box_domain:-${project_slug}.dev}"
 staging_domain="${box_domain:-stage.${project_slug}.com}"
 production_domain="${box_domain:-www.${project_slug}.com}"
 
-dev_webroot_path="${webroot_path:-www}"
-dev_wordpress_path="${wordpress_path:-www/wp}"
-dev_content_path="${content_path:-www/content}"
+dev_webroot_path="${dev_webroot_path:-www}"
+dev_wordpress_path="${dev_wordpress_path:-www/wp}"
+dev_content_path="${dev_content_path:-www/content}"
 
 webroot_path="${webroot_path:-www}"
 wordpress_path="${wordpress_path:-www}"
