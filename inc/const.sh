@@ -30,3 +30,7 @@ BOXCLI_VALOPTS=()
 BOXCLI_VALEXP=()
 # Options surrounded/separated by '|'
 BOXCLI_OPT_STR=""
+
+
+#Default Local Top Level Domain, e.g. "example.dev"
+BOXCLI_DEFAULT_LOCAL_TLD=".dev"

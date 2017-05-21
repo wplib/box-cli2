@@ -1,5 +1,5 @@
 #
-# Command: box project init <project_name>
+# Command: box project init <name>
 #
 
 #
@@ -10,14 +10,56 @@ t2="\n\t\t"
 t3="\n\t\t\t"
 t4="\n\t\t\t\t"
 
-echo "${BOXCLI_OPTIONS}"
+if ! noArgsPassed ; then
+	name="$1"
+fi
+
+box_domain="$(toLowerCase "$(sanitizeDomain "$(getOptionValue "box-domain" "${name:=wplib.box}")")")"
+
+if strContains "${name}" "." ; then
+	project_name="$(stripExtension "${name}")"
+else	
+	project_name="${name}"
+fi
+
+if strContains "${box_domain}" "." ; then
+	project_slug="$(stripExtension "${box_domain}")"
+else	
+ 	project_slug="${box_domain}"
+	box_domain+="${BOXCLI_DEFAULT_LOCAL_TLD}"
+fi
+
+if hasOptionValue "project-slug" ; then 
+	project_slug="$(getOptionValue "project-slug")"
+fi
+
+if hasOptionValue "project-name" ; then 
+	project_name="$(getOptionValue "project-name")"
+fi
+project_name="$(toProperCase "${project_name}")"
+
+
+project_id="$(sanitizeIdentifier "$(getOptionValue "project-id" "${project_slug}")")"
+project_slug="$(toLowerCase "$(getOptionValue "project-slug" "${project_id}")")"
+
+project_type="${project_type:-site}"
+
+
+echo "Project ID:   $project_id"
+echo "Project Name: $project_name"
+echo "Project Slug: $project_slug"
+echo "Project Type: $project_type"
+echo "Box Domain:   $box_domain"
+
+
 exit
 
 
-if noArgsPassed ; then
-	stdErr "No project name passed."
-	exit
-fi
+
+
+# Start building up the JSON file
+project_json="{${t1}\"name\": \"${project_name}\""
+stdOut "Initializing project ${project_name}..."
 
 project_name="$1"
 
@@ -58,9 +100,9 @@ local_role="${local_role:-local}"
 staging_role="${staging_role:-stage}"
 production_role="${production_role:-production}"
 
-local_domain="${local_domain:-${project_slug}.dev}"
-staging_domain="${local_domain:-stage.${project_slug}.com}"
-production_domain="${local_domain:-www.${project_slug}.com}"
+local_domain="${box_domain:-${project_slug}.dev}"
+staging_domain="${box_domain:-stage.${project_slug}.com}"
+production_domain="${box_domain:-www.${project_slug}.com}"
 
 dev_webroot_path="${webroot_path:-www}"
 dev_wordpress_path="${wordpress_path:-www/wp}"
@@ -103,7 +145,7 @@ project_json+="${t1}}"
 #
 # Test to ensure we don't overwrite an existing directory
 #
-project_dir="$(pwd)/${local_domain}"
+project_dir="$(pwd)/${box_domain}"
 if [ -d "${project_dir}" ] ; then 
 	stdErr "Aborting; project directory exists: ${project_dir}"
 	exit

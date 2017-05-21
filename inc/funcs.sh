@@ -1,49 +1,7 @@
 # funcs.sh
 
 source "${BOXCLI_INC_DIR}/params.sh"
-
-#
-# Parses templates that contain {{.jq.queries}} into project.json
-# Queries can be nested but nest should have default value, e.g. {{foo.{{.abc=bar}}.baz}}.
-# But there is no looping at this point and no supplied values (yet)
-#
-function parseTemplate {
-    local template="$1"
-    local left
-    local right
-    local query
-    local value
-    if [[ "${template}" =~ ^(.*)}}(.*)$ ]] ; then
-        left="${BASH_REMATCH[1]}"
-        right="${BASH_REMATCH[2]}"
-        left="$(parseTemplate "${left}")"
-        stdOut "$(parseTemplate "${left}${right}")"
-        return
-    fi
-    if [[ "${template}" =~ ^(.*){{(.*)$ ]] ; then
-        left="${BASH_REMATCH[1]}"
-        right="${BASH_REMATCH[2]}"
-        right="$(parseTemplate "${right}")"
-        stdOut "${left}${right}"
-        return
-    fi
-    if [[ "${template}" =~ ^(\.[\.a-z_=]+)$ ]] ; then
-        if [[ "${template}" == *"="* ]] ; then 
-            query="${template%=*}"
-            value="${template#*=}"
-        else 
-            query="${template}"
-            value=""
-        fi
-        result="$(box util read-project-file "${query}")"
-        if isEmpty "${result}" ; then
-            result="${value}"
-        fi
-        stdOut "${result}"
-        return
-    fi
-    stdOut "${template}"
-}
+source "${BOXCLI_INC_DIR}/templates.sh"
 
 function isNull {
     if [ "zip" == "$(getFileExtension "$1")" ] ; then
@@ -73,58 +31,94 @@ function isEmpty {
     return 1
 }
 
+function strContains {
+    if [[ "$1" == *"$2"* ]] ; then
+        return 0
+    fi
+    return 1
+}
+
+function sanitizeIdentifier {
+    echo "$1" | sed 's/ /_/g' | sed 's/[^a-zA-Z0-9_]//g'
+}
+
+function sanitizeDomain {
+    echo "$1" | sed 's/[^\.a-zA-Z0-9_-]//g'
+}
+
+#
+# Uppercase first letter
+# TODO: Split on spaces and uppercase ever word 
+#
+function toProperCase {
+    first="${1:0:1}"
+    rest="${1:1}"
+    echo "$(toUpperCase $first)${rest}"
+}
+
+#
+# Strip file extension
+#
+function stripExtension {
+    echo "${1%.*}"
+}
+
 #
 # Return file extension, converting to lowercase for easy comparison
 #
 function getFileExtension {
-    stdOut "$(toLowerCase "$(getFileExtensionRaw "${1}")")"
+    echo "$(toLowerCase "$(getFileExtensionRaw "${1}")")"
 }
 
 #
 # Return raw file extension (RAW = Do not convert to lowercase)
 #
 function getFileExtensionRaw {
-    stdOut "${1##*.}"
+    echo "${1##*.}"
 }
 
 function toLowerCase {
-    stdOut "$1" | tr '[:upper:]' '[:lower:]'
+    echo "$1" | tr '[:upper:]' '[:lower:]'
+}
+
+function toUpperCase {
+    echo "$1" | tr '[:lower:]' '[:upper:]'
 }
 
 function getLocalDomain {
-    stdOut "$(box util get-local-domain)"
+    echo "$(box util get-local-domain)"
 }
 
 function getContentDir {
-    stdOut "$(box util get-content-dir)"
+    echo "$(box util get-content-dir)"
 }
 
 function getContentPath {
-    stdOut "$(box util get-content-path)"
+    echo "$(box util get-content-path)"
 }
 
 function getWebrootDir {
-    stdOut "$(box util get-webroot-dir)"
+    echo "$(box util get-webroot-dir)"
 }
 
 function getWebrootPath {
-    stdOut "$(box util get-webroot-path)"
+    echo "$(box util get-webroot-path)"
 }
 
 function getProjectDir {
-    stdOut "$(box util get-project-dir)"
+    echo "$(box util get-project-dir)"
 }
 
 function getProjectFile {
-    stdOut "$(box util get-project-file)"
+    echo "$(box util get-project-file)"
 }
 
 function findProjectFile {
-    stdOut "$(box util find-project-file)"
+    echo "$(box util find-project-file)"
 }
 
 function findProjectDir {
-    stdOut "$(box util find-project-dir)"
+    echo "$(box util find-project-dir)"
 }
 
 function pushProjectDir {

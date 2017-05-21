@@ -33,8 +33,34 @@ function isQuiet {
     return $?
 }
 
+function hasOptionValue {
+    value="$(getOptionValue "$1")"
+    if [ "" != "${value}" ] ; then
+        return 0
+    fi
+    return 1
+}
+
+function getOptionValue {
+    local option="$(echo "$1" | sed 's/_/-/g')"
+    local i=0
+    local value=""
+    local default="$(if [ $# -ge 2 ] ; then echo "$2" ; fi)"
+    for test_option in "${BOXCLI_OPTIONS[@]}" ; do
+        temp="${BOXCLI_OPTVALS[${i}]}"
+        i=$((i+1))
+        [ "${option}" != "${test_option}" ] && continue
+        value="${temp}"
+        break
+    done
+    if [ "" == "${value}" ] ; then
+        value="$default"
+    fi
+    echo "${value}"
+}
+
 function _testBoolOption {
-    varName=$1
+    local varName=$1
     shift
     if [ "" == "${!varName}" ] ; then
         if [ "" == "${BOXCLI_OPT_STR}" ] ; then
@@ -85,18 +111,18 @@ function _box_process_params {
                 else
                     exp=0
                 fi
-                BOXCLI_VALOPTS+=($opt)
-                BOXCLI_VALEXP+=($exp)
+                BOXCLI_VALOPTS+=("${opt}")
+                BOXCLI_VALEXP+=("${exp}")
                 BOXCLI_VO_STR+="${opt}|"
             done
         fi
         if [[ $arg == -* ]] ; then
-            local val=''
+            val=''
             if [[ "--" == "${arg:0:2}" ]] ; then
                 arg=${arg:2}
                 if [[ "${arg}" == *"="* ]] ; then
-                    arg=${arg%=*}
-                    val=${arg#*=}
+                    val="${arg#*=}"
+                    arg="${arg%=*}"
                 fi
                 if ! [[ "${BOXCLI_VO_STR}" =~ "|${arg}|" ]] ; then
                     stdErr "Invalid option --${arg}"
@@ -126,8 +152,11 @@ function _box_process_params {
                     exit 1
                 fi
             fi
-            BOXCLI_OPTIONS+=($arg)
-            BOXCLI_OPTVALS+=($val)
+            # echo "Arg: $arg"
+            # echo "Val: $val"
+            # echo "---"
+            BOXCLI_OPTIONS+=("${arg}")
+            BOXCLI_OPTVALS+=("${val}")
         else
             BOXCLI_CLAUSES+=($arg)
             tst_path="${cmd_path}/cmd/${arg}"
