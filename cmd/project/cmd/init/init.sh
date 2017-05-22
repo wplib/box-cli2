@@ -213,12 +213,6 @@ JSON
 if ! isDryRun ; then
 
     #
-    # Output HOSTNAME and IP files for Vagrantfile to read
-    #
-    echo "${hostname}" > HOSTNAME
-    echo "${ip_address}" > IP
-
-    #
     # Create project and standard directories
     #
     mkdir -p "${project_dir}"
@@ -228,6 +222,12 @@ if ! isDryRun ; then
     mkdir -p "${dev_webroot_path}"
     mkdir -p "${dev_core_path}"
     mkdir -p "${dev_content_path}"
+
+    #
+    # Output HOSTNAME and IP files for Vagrantfile to read
+    #
+    echo "${hostname}" > HOSTNAME
+    echo "${ip_address}" > IP
 
     #
     # Generate project.json
