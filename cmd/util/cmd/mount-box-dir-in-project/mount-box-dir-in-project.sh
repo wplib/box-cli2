@@ -8,7 +8,7 @@ project_dir="$(findProjectDir)/${mount_path}"
 box_ip="$(box util get-box-ip-address)"
 
 if [ "" == "${box_ip}" ]; then
-	echo "No IP address configured for the box."
+	statusMsg "No IP address configured for the box."
 	exit
 fi
 
@@ -17,7 +17,7 @@ if ! cmdExists "sshfs"; then
 fi
 
 if ! cmdExists "sshfs"; then
-	echo "No installation of sshfs."
+	statusMsg "No installation of sshfs."
 	exit
 fi
 
@@ -28,7 +28,7 @@ fi
 mount="vagrant@${box_ip}:/box/${mount_path}"
 
 if [ "" != "$(mount | grep "${mount}")" ] ; then
-	echo "${project_dir} already mounted."
+	statusMsg "${project_dir} already mounted."
 	exit
 fi
 

@@ -6,23 +6,23 @@
 # But there is no looping at this point and no supplied values (yet)
 #
 function parseTemplate {
-    local template="$1"
     local left
     local right
     local query
     local value
+    local template="$1"
     if [[ "${template}" =~ ^(.*)}}(.*)$ ]] ; then
         left="${BASH_REMATCH[1]}"
         right="${BASH_REMATCH[2]}"
         left="$(parseTemplate "${left}")"
-        stdOut "$(parseTemplate "${left}${right}")"
+        echo -e "$(parseTemplate "${left}${right}")"
         return
     fi
     if [[ "${template}" =~ ^(.*){{(.*)$ ]] ; then
         left="${BASH_REMATCH[1]}"
         right="${BASH_REMATCH[2]}"
         right="$(parseTemplate "${right}")"
-        stdOut "${left}${right}"
+        echo -e "${left}${right}"
         return
     fi
     if [[ "${template}" =~ ^(\.[\.a-z_=]+)$ ]] ; then
@@ -37,8 +37,8 @@ function parseTemplate {
         if isEmpty "${result}" ; then
             result="${value}"
         fi
-        stdOut "${result}"
+        echo "${result}"
         return
     fi
-    stdOut "${template}"
+    echo -e "${template}"
 }

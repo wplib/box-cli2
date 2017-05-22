@@ -5,24 +5,19 @@
 #
 
 project_dir="$(getProjectDir)"
-echo "${project_dir}"
-vagrant_file="${project_dir}/Vagrantfile"
-
-if [ -f "${vagrant_file}" ] ; then
-	if readNo "Overwrite existing ${vagrant_file}" ; then 
+vagrant_filepath="${project_dir}/Vagrantfile"
+statusMsg "Generating ${vagrant_filepath}..."
+if [ -f "${vagrant_filepath}" ] ; then
+	if readNo "Overwrite ${vagrant_filepath}" ; then
 		stdErr "User aborted."
 		exit 1
 	fi
-fi	
+fi
+vagrant_file="$(box util load-template "Vagrantfile")"
+echo -e "${vagrant_file}" > $vagrant_filepath
+statusMsg "Vagrant file generated: ${vagrant_filepath}"
 
-tmp_file="${BOXCLI_TEMP_DIR}/Vagrantfile"
 
-box util load-template "Vagrantfile" > $tmp_file
-
-box util copy-to-project-dir "${tmp_file}" --quiet
-
-statusMsg "Vagrant file generated: ${vagrant_file}"
-exit
 
 
 

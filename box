@@ -28,6 +28,13 @@ mkdir -p "${BOXCLI_TEMP_DIR}"
 source "${BOXCLI_ROOT_DIR}/inc/funcs.sh"
 __boxProcessCmdLine "$@"
 
+# Initialize these
+isQuiet
+isNoPrompt
+isDryRun
+isComposer
+isJSON
+
 # Run reset script to ensure known bash environment
 source "${BOXCLI_INCLUDE_DIR}/reset.sh"
 
@@ -117,7 +124,7 @@ if (( 0 < "${#BOXCLI_CLAUSES[@]}" )) ; then
     fi
     ((BOXCLI_RECURSION--))
     if (( 0 == $BOXCLI_RECURSION )) ; then
-        stdOut "Done."
+        statusMsg "Done."
     fi
 
     unset BOXCLI_RECURSION

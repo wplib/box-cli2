@@ -47,6 +47,10 @@ function sanitizeIdentifier {
     echo "$1" | sed 's/ /_/g' | sed 's/[^a-zA-Z0-9_]//g'
 }
 
+function sanitizePath {
+    echo "$1" | sed 's/[^a-zA-Z0-9_/-]//g'
+}
+
 function sanitizeDomain {
     echo "$1" | sed 's/[^\.a-zA-Z0-9_-]//g'
 }

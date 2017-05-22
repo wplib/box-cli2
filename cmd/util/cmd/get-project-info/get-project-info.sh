@@ -18,6 +18,6 @@ if isEmpty "${value}" ; then
 		exit 1
 	fi
 fi	
-stdOut "${value}"
+echo -e "${value}"
 
 

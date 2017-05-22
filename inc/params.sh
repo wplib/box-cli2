@@ -18,20 +18,11 @@ BOXCLI_VALID_SWITCHES_STR="|"
 BOXCLI_IS_QUIET=""
 BOXCLI_IS_JSON=""
 BOXCLI_IS_COMPOSER=""
+BOXCLI_IS_DRY_RUN=""
+BOXCLI_IS_NO_PROMPT=""
 
-function isComposer {
-    testYesNoSwitch "BOXCLI_IS_COMPOSER" 'composer'
-    return $?
-}
-
-function isJSON {
-    testYesNoSwitch "BOXCLI_IS_JSON" 'json'
-    return $?
-}
-
-function isQuiet {
-    testYesNoSwitch "BOXCLI_IS_QUIET" 'quiet'
-    return $?
+function returnQuiet {
+    BOXCLI_IS_QUIET="yes"
 }
 
 function hasSwitchValue {
@@ -61,30 +52,33 @@ function getSwitchValue {
 }
 
 function testYesNoSwitch {
-    local varName=$1
-    shift
-    if [ "" == "${!varName}" ] ; then
+    local varName="$1"
+    local switch="$2"
+    if [ "" != "${!varName}" ] ; then
+        if [ "yes" == "${!varName}" ] ; then
+            eval $varName='yes'
+            return 0
+        fi
+        eval $varName='no'
+        return 1
+    else
         if [ "" == "${BOXCLI_SWITCHES_STR}" ] ; then
             #
             # "!" is a flag character to indicate switch not set
             # See below for comparison to "!"
             #
-            eval $varName="no"
+            eval $varName='no'
             return 1
-        fi
-        for switch in "$@" ; do
+        else
             if [[ "${BOXCLI_SWITCHES_STR}" =~ "|${switch}|" ]] ; then
-                eval $varName="yes"
+                eval $varName='yes'
                 return 0
             fi
-        done
-        return 1
+            eval $varName='no'
+            return 1
+        fi
     fi
 
-    if [ "yes" == "${!varName}" ] ; then
-        return 0
-    fi
-    return 1
 }
 
 function __boxProcessCmdLine {
@@ -139,7 +133,7 @@ function __boxProcessCmdLine {
                     __is_bool="${BOXCLI_BOOLEAN_SWITCHES[${__i}]}"
                     __i=$((__i+1))
                     [ "${__switch}" != "${__arg}" ] && continue
-                    if [[ "yes" == "${__is_bool}" && "" == "${__val}" ]] ; then
+                    if [[ "no" == "${__is_bool}" && "" == "${__val}" ]] ; then
                         stdErr "Switch \"${__arg}\" expects a value in the form:"
                         stdErr ""
                         stdErr "\t--${__arg}=example"
@@ -182,3 +176,26 @@ function __boxProcessCmdLine {
     fi
 }
 
+function isNoPrompt {
+    testYesNoSwitch "BOXCLI_IS_NO_PROMPT" 'no-prompt'
+    return $?
+}
+
+function isDryRun {
+    testYesNoSwitch "BOXCLI_IS_DRY_RUN" 'dry-run'
+    return $?
+}
+
+function isComposer {
+    testYesNoSwitch "BOXCLI_IS_COMPOSER" 'composer'
+    return $?
+}
+
+function isJSON {
+    testYesNoSwitch "BOXCLI_IS_JSON" 'json'
+    return $?
+}
+function isQuiet {
+    testYesNoSwitch "BOXCLI_IS_QUIET" 'quiet'
+    return $?
+}

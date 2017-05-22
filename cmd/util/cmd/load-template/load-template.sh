@@ -13,8 +13,8 @@ template_file="${BOXCLI_TEMPLATE_DIR}/$1.template"
 if [ ! -f "${template_file}" ] ; then
 	stdErr "The template [${template_file}] does not exist."
 	exit 1
-else	
-	stdOut "$(parseTemplate "$(cat "${template_file}")")"
+else
+	echo -e "$(parseTemplate "$(cat "${template_file}")")"
 fi
 
  

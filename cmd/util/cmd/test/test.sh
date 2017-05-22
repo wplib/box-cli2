@@ -2,24 +2,16 @@
 # Command: box util test [<arg>]
 #
 
-project_dir="$(findProjectDir)"
-webroot_path="$(getWebrootPath)"
-
-tmp_dir="/tmp/boxcli/snapshots/tmp"
-mkdir -p "${tmp_dir}"
-
-
-cd "${project_dir}"
-
-if [ -d "${webroot_path}" ] ; then 
-	if ! box archive webroot ; then
-		exit 1
-	fi
+if isJSON ; then
+    echo "JSON! :-)"
+else
+    echo "No json. :-("
 fi
 
-mkdir -p sql
 
-mkdir -p "${webroot_path}"
+
+exit
+
 
 unzip -qq -n "${project_dir}/snapshots/${snapshot_file}" -d "${tmp_dir}" -x "wp-content/uploads/*"
 

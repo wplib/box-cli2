@@ -6,9 +6,6 @@ Vagrant.configure(2) do |config|
     config.vm.box = "wplib/wplib"
     config.vm.box_version = "{{.box.version}}"
 
-    File.write('IP', "10.10.10.#{rand(10..250)}") if not File.exists?('IP')
-    File.write('HOSTNAME', "{{.hosts.list.{{.hosts.roles.local}}.domain}}") if not File.exists?('HOSTNAME')
-
     hostname = IO.read('HOSTNAME').strip;
 
     config.vm.hostname = hostname
@@ -37,3 +34,4 @@ Vagrant.configure(2) do |config|
         run_remote "box startup"
     end
 end
+

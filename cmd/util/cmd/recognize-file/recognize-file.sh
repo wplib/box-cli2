@@ -17,7 +17,7 @@ fi
 for recognizer in "${BOXCLI_RECOGNIZER_DIR}"/* ; do
 	result="$(source "${recognizer}" "${filepath}")"
 	if ! isEmpty "${result}" ; then
-		stdOut "${result}"
+		echo -e "${result}"
 		exit
 	fi
 done

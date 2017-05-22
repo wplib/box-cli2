@@ -5,28 +5,29 @@
 #
 # Tab Constants
 #
-t1="\n\t"
-t2="\n\t\t"
-t3="\n\t\t\t"
-t4="\n\t\t\t\t"
-
 if ! noArgsPassed ; then
 	name="$1"
 fi
 
-box_domain="$(toLowerCase "$(sanitizeDomain "$(getSwitchValue "box-domain" "${name:=wplib.box}")")")"
+#
+# Set hostname first
+#
+hostname="$(toLowerCase "$(sanitizeDomain "$(getSwitchValue "hostname" "${name:=wplib.box}")")")"
 
+#
+# Set top-level project values
+#
 if strContains "${name}" "." ; then
 	project_name="$(stripExtension "${name}")"
 else	
 	project_name="${name}"
 fi
 
-if strContains "${box_domain}" "." ; then
-	project_slug="$(stripExtension "${box_domain}")"
+if strContains "${hostname}" "." ; then
+	project_slug="$(stripExtension "${hostname}")"
 else	
- 	project_slug="${box_domain}"
-	box_domain+="${BOXCLI_DEFAULT_LOCAL_TLD}"
+ 	project_slug="${hostname}"
+	hostname+="${BOXCLI_DEFAULT_LOCAL_TLD}"
 fi
 
 if hasSwitchValue "project-slug" ; then
@@ -37,178 +38,239 @@ if hasSwitchValue "project-name" ; then
 	project_name="$(getSwitchValue "project-name")"
 fi
 project_name="$(toProperCase "${project_name}")"
-
-
-shortname="$(sanitizeIdentifier "$(getSwitchValue "shortname" "${project_slug}")")"
+shortname="$(toProperCase "$(sanitizeIdentifier "$(getSwitchValue "shortname" "${project_slug}")")")"
 project_slug="$(toLowerCase "$(getSwitchValue "project-slug" "${shortname}")")"
-
 project_type="${project_type:-site}"
-
-stdOut "Initializing project..."
-stdOut ""
-stdOut "\tBox Domain:   $box_domain"
-stdOut "\tProject Name: $project_name"
-stdOut "\tShortname:    $shortname"
-stdOut "\tProject Slug: $project_slug"
-stdOut "\tProject Type: $project_type"
-
-
-exit
-
-
-
-
-# Start building up the JSON file
-project_json="{${t1}\"name\": \"${project_name}\""
-
-project_name="$1"
-
-# Start building up the JSON file
-project_json="{${t1}\"name\": \"${project_name}\""
-stdOut "Initializing project ${project_name}..."
-
-# Get the shortname
-read -p "Shortname for project (ProperCase expected): " shortname
-project_json+=",${t1}\"shortname\": \"${shortname}\""
-
-# Calculate the slug
-project_slug="$(toLowerCase "${shortname}")"
-project_json+=",${t1}\"slug\": \"${project_slug}\""
-
-# Get the project type
-#read -p "Type of project [site]: " project_type
-project_type="${project_type:-site}"
-project_json+=",${t1}\"type\": \"${project_type}\""
+project_version="0.1.0-alpha"
 
 #
-# Set the site theme
+# Set site-specific information
 #
-site_theme="${site_theme:-${project_slug}-theme}"
-project_json+=",${t1}\"site\": {${t2}\"theme\": \"${site_theme}\"${t1}}"
+site_theme="$(toLowerCase "$(getSwitchValue "site-theme" "${project_slug}-theme")")"
 
 #
-# Set the box version
+# Set the box version & IP address
 #
 box_version="${box_version:-${BOXCLI_BOX_VERSION}}"
-project_json+=",${t1}\"box\": {${t2}\"version\": \"${box_version}\"${t1}}"
-
+ip_address="10.10.10.$(( ( RANDOM % 240 ) + 10 ))"
 
 #
-# Set the hosts
+# Set the host roles and hosts
 #
+domain_sans_ext="$(stripExtension "${hostname}")"
+
 local_role="${local_role:-local}"
 staging_role="${staging_role:-stage}"
 production_role="${production_role:-production}"
 
-local_domain="${box_domain:-${project_slug}.dev}"
-staging_domain="${box_domain:-stage.${project_slug}.com}"
-production_domain="${box_domain:-www.${project_slug}.com}"
+local_domain="www.${hostname}"
+staging_domain="stage.${domain_sans_ext}.com"
+production_domain="www.${domain_sans_ext}.com"
 
-dev_webroot_path="${dev_webroot_path:-www}"
-dev_wordpress_path="${dev_wordpress_path:-www/wp}"
-dev_content_path="${dev_content_path:-www/content}"
+dev_webroot_path="$(sanitizePath "$(getSwitchValue "webroot-path" "${dev_webroot_path:-www}")")"
+dev_core_path="$(sanitizePath "$(getSwitchValue "core-path" "${dev_core_path:-${dev_webroot_path}/wp}")")"
+dev_content_path="$(sanitizePath "$(getSwitchValue "content-path" "${dev_content_path:-${dev_webroot_path}/content}")")"
 
 webroot_path="${webroot_path:-www}"
-wordpress_path="${wordpress_path:-www}"
-content_path="${content_path:-wp-content}"
-
-
-project_json+=",${t1}\"hosts\": " 
-	project_json+="{${t2}\"roles\": "
-		project_json+="{${t3}\"local\": \"${local_role}\""
-		project_json+=",${t3}\"on_commit\": \"${staging_role}\""
-		project_json+=",${t3}\"production\": \"${production_role}\""
-	project_json+="${t2}}"
-	project_json+=",${t2}\"list\":"
-		project_json+="{${t3}\"${local_role}\": "
-			project_json+="{${t4}\"domain\": \"${local_domain}\""
-			project_json+=",${t4}\"webroot_path\": \"${dev_webroot_path}\""
-			project_json+=",${t4}\"wordpress_path\": \"${dev_wordpress_path}\""
-			project_json+=",${t4}\"content_path\": \"${dev_content_path}\""
-		project_json+="${t3}}"	
-		project_json+=",${t3}\"${staging_role}\": "
-			project_json+="{${t4}\"domain\": \"stage.${staging_domain}.com\""
-			project_json+=",${t4}\"webroot_path\": \"${webroot_path}\""
-			project_json+=",${t4}\"wordpress_path\": \"${wordpress_path}\""
-			project_json+=",${t4}\"content_path\": \"${content_path}\""
-		project_json+="${t3}}"	
-		project_json+=",${t3}\"${production_role}\": "
-			project_json+="{${t4}\"domain\": \"stage.${production_domain}.com\""
-			project_json+=",${t4}\"webroot_path\": \"${webroot_path}\""
-			project_json+=",${t4}\"wordpress_path\": \"${wordpress_path}\""
-			project_json+=",${t4}\"content_path\": \"${content_path}\""
-		project_json+="${t3}}"	
-	project_json+="${t2}}"
-project_json+="${t1}}"
-
+core_path="${core_path:-www}"
+content_path="${content_path:-www/wp-content}"
 
 #
 # Test to ensure we don't overwrite an existing directory
 #
-project_dir="$(pwd)/${box_domain}"
-if [ -d "${project_dir}" ] ; then 
+project_dir="$(pwd)/${hostname}"
+if [ -d "${project_dir}" ] ; then
 	stdErr "Aborting; project directory exists: ${project_dir}"
 	exit
-fi	
+fi
 
 #
 # Ask if the user wants to create the project
 #
-if readNo "Create project [${project_name}] in ${project_dir}" ; then 
+if ! isNoPrompt && readNo "Create project in ${project_dir}/" ; then
 	stdErr "User cancelled initializing project."
 	exit
-fi	
-
-#
-# Create project directory
-#
-mkdir -p "${project_dir}"
-cd "${project_dir}"
-stdOut "Project directory created."
+fi
 
 #
 # Test to ensure we don't overwrite an existing project.json
 #
 project_file="${project_dir}/project.json"
-if [ -f "${project_file}" ] ; then 
+if [ -f "${project_file}" ] ; then
 	stdErr "Aborting; project JSON exists: ${project_file}"
 	exit
-fi	
+fi
 
 #
-# Create standard directories
+# Output summary, it caller did request it be suppressed
 #
-mkdir -p archive
-mkdir -p sql
-mkdir -p www
-mkdir -p www/wp
-mkdir -p www/content
-stdOut "Standard directories created."
+if isJSON || isQuiet ; then
+    summary=""
+else
+    summary="$(cat <<TEXT
+Initializing project...
+
+  Project:
+    Project Dir:    ${project_dir}
+    Project File:   ${project_file}
+    Project Name:   ${project_name}
+    Project Slug:   ${project_slug}
+    Project Type:   ${project_type}
+    Shortname:      ${shortname}
+    Version:        ${project_version}
+  Box:
+    Hostname:       ${hostname}
+    IP Address:     ${ip_address}
+    Version:        ${box_version}
+  Site:
+    Theme:          ${site_theme}
+  Host Roles:
+    local:          ${local_role}
+    on_commit:      ${staging_role}
+    production:     ${production_role}
+  Hosts:
+    ${local_role}:
+      domain:         ${local_domain}
+      webroot_path:   ${dev_webroot_path}
+      core_path:      ${dev_core_path}
+      content_path:   ${dev_content_path}
+    ${staging_role}:
+      domain:         ${staging_domain}
+      webroot_path:   ${webroot_path}
+      core_path:      ${core_path}
+      content_path:   ${content_path}
+    ${production_role}:
+      domain:         ${production_domain}
+      webroot_path:   ${webroot_path}
+      core_path:      ${core_path}
+      content_path:   ${content_path}
+
+
+Project initialized.
+TEXT
+    )"
+fi
 
 #
-# Generate Vagrantfile
+# Start building up the JSON file
 #
-box util generate-vagrantfile --quiet
-stdOut "Vagrantfile generated."
+json="$(cat <<JSON
+{
+    "name": "${project_name}",
+    "shortname": "${shortname}",
+    "slug": "${project_slug}",
+    "type": "${project_type}",
+    "version": "${project_version}",
+    "description": "${project_name}",
+    "site": {
+        "theme": "${site_theme}"
+    },
+    "box": {
+        "hostname": "${hostname}",
+        "version": "${box_version}",
+        "ip_address": "${ip_address}"
+    },
+    "services": {
+        "database": "mysql",
+        "webserver": "nginx",
+        "processvm": "php7.0",
+        "kvstore": "redis"
+    },
+    "hosts": {
+        "roles": {
+            "local": "${local_role}",
+            "on_commit": "${staging_role}",
+            "production": "${production_role}"
+        },
+        "list": {
+            "${local_role}": {
+                "domain": "${local_domain}",
+                "webroot_path": "${dev_webroot_path}",
+                "core_path": "${dev_core_path}",
+                "content_path": "${dev_content_path}"
+            },
+            "${staging_role}": {
+                "domain": "${staging_domain}",
+                "webroot_path": "${webroot_path}",
+                "core_path": "${core_path}",
+                "content_path": "${content_path}"
+            },
+            "${production_role}": {
+                "domain": "${production_domain}",
+                "webroot_path": "${webroot_path}",
+                "core_path": "${core_path}",
+                "content_path": "${content_path}"
+            }
+        }
+    }
+}
+JSON
+)"
 
 #
-# Generate .gitignore
-# @TODO generate from a template
+# Create directories, files and project.json
 #
-echo ".idea" > .gitignore
-stdOut ".gitignore generated."
+if ! isDryRun ; then
+
+    #
+    # Output HOSTNAME and IP files for Vagrantfile to read
+    #
+    echo "${hostname}" > HOSTNAME
+    echo "${ip_address}" > IP
+
+    #
+    # Create project and standard directories
+    #
+    mkdir -p "${project_dir}"
+    cd "${project_dir}"
+    mkdir -p archive
+    mkdir -p sql
+    mkdir -p "${dev_webroot_path}"
+    mkdir -p "${dev_core_path}"
+    mkdir -p "${dev_content_path}"
+
+    #
+    # Generate project.json
+    #
+    echo  -e "${json}"> $project_file
+
+    #
+    # Generate Vagrantfile
+    #
+    box util generate-vagrantfile --quiet
+
+    #
+    # Generate .gitignore
+    # @TODO generate from a template
+    #
+    echo ".idea" > .gitignore
+
+    #
+    # Generate README.md
+    # @TODO generate from a template
+    #
+    echo "# ${project_name}" > README.md
+
+fi
 
 #
-# Generate README.md
-# @TODO generate from a template
+# Finally...
 #
-echo "# ${project_name}" > README.md
-stdOut "README.md generated."
+if isJSON ; then
+    #
+    # Output project.json, if caller requested it.
+    #
+    stdOut "${json}"
+else
+    if ! isQuiet ; then
+        #
+        # Output summary, if caller did not request it be suppressed.
+        #
+        stdOut "${summary}"
+    fi
+fi
 
 #
-# Generate project.json
+# Skip outputting anything quitting this
 #
-echo  -e "${project_json}\n}"> $project_file
-stdOut "${project_file} generated."
-
-
+returnQuiet

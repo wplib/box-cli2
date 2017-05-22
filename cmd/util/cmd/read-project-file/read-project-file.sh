@@ -9,6 +9,6 @@ if [ "null" == "${result}" ] ; then
 	result=""
 fi
 if ! isEmpty "${result}" ; then 
-	stdOut "${result}"
+	echo -e "${result}"
 fi
 

@@ -2,12 +2,13 @@
 # Command: box util find-project-dir
 #
 
+
 if ! isEmpty "${BOXCLI_PROJECT_DIR}" ; then
-	stdOut "${BOXCLI_PROJECT_DIR}" 
+	stdOut "${BOXCLI_PROJECT_DIR}"
 	return
 fi
 
-pushDir 
+pushDir
 while [ ! -f "$(pwd)/project.json" ] ; do
 	if [ "$(pwd)" == "/" ] ; then
 		popDir
@@ -16,9 +17,9 @@ while [ ! -f "$(pwd)/project.json" ] ; do
 	cd ..
 done
 if isEmpty "${BOXCLI_PROJECT_DIR}" ; then
-	BOXCLI_PROJECT_DIR="$(pwd)" 
+	BOXCLI_PROJECT_DIR="$(pwd)"
 fi
-stdOut "${BOXCLI_PROJECT_DIR}" 
+echo "${BOXCLI_PROJECT_DIR}"
 popDir
 exit
 

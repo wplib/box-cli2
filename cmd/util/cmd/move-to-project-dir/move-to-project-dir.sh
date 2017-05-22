@@ -6,11 +6,7 @@ source_file="$1"
 
 project_dir="$(getProjectDir)"
 
-if isEmpty "${project_dir}" ; then
-
-	exit
-
-else	
+if ! isEmpty "${project_dir}" ; then
 
 	source_base="$(basename "$1")"
 
