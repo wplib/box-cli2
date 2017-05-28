@@ -14,7 +14,12 @@ if [ ! -f "${template_file}" ] ; then
 	stdErr "The template [${template_file}] does not exist."
 	exit 1
 else
-	echo -e "$(parseTemplate "$(cat "${template_file}")")"
+	result="$(parseTemplate "$(cat "${template_file}")")"
+	if isError "${result}" ; then
+	    throwError
+	    exit 1
+    fi
+    echo -e "${result}"
 fi
 
- 
+

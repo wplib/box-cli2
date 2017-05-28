@@ -4,7 +4,7 @@
 
 
 if ! isEmpty "${BOXCLI_PROJECT_DIR}" ; then
-	stdOut "${BOXCLI_PROJECT_DIR}"
+	echo "${BOXCLI_PROJECT_DIR}"
 	return
 fi
 

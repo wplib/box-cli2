@@ -1,3 +1,4 @@
+#@IgnoreInspection BashAddShebang
 #
 # Command: box site import <import_file>
 #

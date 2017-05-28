@@ -8,14 +8,8 @@ function getBoxCliRootDir {
     echo "${BOXCLI_ROOT_DIR}"
 }
 
-function isNull {
-    if [ "zip" == "$(getFileExtension "$1")" ] ; then
-        return 0
-    fi
-    return 1
-}
-
 function isZipFile {
+    (( 0 == $# )) && return 1
     if [ "zip" == "$(getFileExtension "$1")" ] ; then
         return 0
     fi
@@ -23,20 +17,36 @@ function isZipFile {
 }
 
 function fileExists {
+    (( 0 == $# )) && return 1
     if [ -f "$1" ] ; then
         return 0
     fi
     return 1
 }
 
+function isError {
+    (( 0 == $# )) && return 0
+    if [ "${BOXCLI_ERROR_VALUE}" == "$1" ] ; then
+        return 0
+    fi
+    return 1
+}
+
+function throwError {
+    echo "${BOXCLI_ERROR_VALUE}"
+}
+
 function isEmpty {
+    (( 0 == $# )) && return 0
     if [ "" == "$1" ] ; then
         return 0
     fi
     return 1
 }
 
+
 function strContains {
+    (( $# < 2 )) && return 1
     if [[ "$1" == *"$2"* ]] ; then
         return 0
     fi
@@ -44,15 +54,15 @@ function strContains {
 }
 
 function sanitizeIdentifier {
-    echo "$1" | sed 's/ /_/g' | sed 's/[^a-zA-Z0-9_]//g'
+    (( 0 < $# )) && echo "$1" | sed 's/ /_/g' | sed 's/[^a-zA-Z0-9_]//g'
 }
 
 function sanitizePath {
-    echo "$1" | sed 's/[^a-zA-Z0-9_/-]//g'
+    (( 0 < $# )) && echo "$1" | sed 's/[^a-zA-Z0-9_/-]//g'
 }
 
 function sanitizeDomain {
-    echo "$1" | sed 's/[^\.a-zA-Z0-9_-]//g'
+    (( 0 < $# )) && echo "$1" | sed 's/[^\.a-zA-Z0-9_-]//g'
 }
 
 #
@@ -60,16 +70,17 @@ function sanitizeDomain {
 # TODO: Split on spaces and uppercase ever word 
 #
 function toProperCase {
+    (( 0 == $# )) && return
     first="${1:0:1}"
     rest="${1:1}"
-    echo "$(toUpperCase $first)${rest}"
+    echo "$(toUpperCase "${first}")${rest}"
 }
 
 #
 # Strip file extension
 #
 function stripExtension {
-    echo "${1%.*}"
+    (( 0 < $# )) && echo "${1%.*}"
 }
 
 #
@@ -83,19 +94,30 @@ function getFileExtension {
 # Return raw file extension (RAW = Do not convert to lowercase)
 #
 function getFileExtensionRaw {
-    echo "${1##*.}"
+    (( 0 < $# )) && echo "${1##*.}"
 }
 
 function toLowerCase {
-    echo "$1" | tr '[:upper:]' '[:lower:]'
+    (( 0 < $# )) && echo "$1" | tr '[:upper:]' '[:lower:]'
 }
 
 function toUpperCase {
-    echo "$1" | tr '[:lower:]' '[:upper:]'
+    (( 0 < $# )) && echo "$1" | tr '[:lower:]' '[:upper:]'
 }
 
 function getLocalDomain {
     echo "$(box util get-local-domain)"
+}
+
+function readProjectValue {
+    if (( 0 < $# )) ; then
+        local result="$(box util read-project-value "$1")"
+        if isError "${result}" ; then
+            throwError
+            exit 1
+        fi
+        echo -e "${result}"
+    fi
 }
 
 function getContentDir {
@@ -118,12 +140,12 @@ function getProjectDir {
     echo "$(box util get-project-dir)"
 }
 
-function getProjectFile {
-    echo "$(box util get-project-file)"
+function getProjectFilePath {
+    echo "$(box util get-project-filepath)"
 }
 
-function findProjectFile {
-    echo "$(box util find-project-file)"
+function findProjectFilePath {
+    echo "$(box util find-project-filepath)"
 }
 
 function findProjectDir {
@@ -131,12 +153,13 @@ function findProjectDir {
 }
 
 function pushProjectDir {
-    local project_dir="$(box util get-project-dir)"
+    local project_dir="$(getProjectDir)"
+    export BOXCLI_PROJECT_DIR="${project_dir}"
     pushDir "${project_dir}"
 }
 
 function popProjectDir {
-    popDir "$(box util find-project-dir)"
+    popDir "$(findProjectDir)"
 }
 
 function hasProjectDir {
@@ -147,7 +170,7 @@ function hasProjectDir {
 }
 
 function hasProjectFile {
-    if [[ "" == "$(findProjectFile)" ]] ; then
+    if [[ "" == "$(findProjectFilePath)" ]] ; then
         return 1
     fi
     return 0
@@ -161,6 +184,7 @@ function noArgsPassed {
 }
 
 function cmdExists {
+    (( 0 == $# )) && return 1
     if [ "" == "$(command -v $1)" ] ; then
         return 1
     fi
@@ -168,17 +192,19 @@ function cmdExists {
 }
 
 function statusMsg {
-    stdOut "$1"
+    (( 0 < $# )) && stdOut "$1"
 }
 
 function stdOut {
+    (( 0 == $# )) && return
     if ! isQuiet ; then
         echo -e "$1"
     fi
 }
 
 function stdErr {
-    echo -e "$1" 1>&2
+    export BOXCLI_ERROR=1
+    (( 0 < $# )) && echo -e "$1" 1>&2
 }
 
 function isHost {

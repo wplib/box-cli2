@@ -21,7 +21,7 @@ BOXCLI_IS_COMPOSER=""
 BOXCLI_IS_DRY_RUN=""
 BOXCLI_IS_NO_PROMPT=""
 
-function returnQuiet {
+function setQuiet {
     BOXCLI_IS_QUIET="yes"
 }
 
@@ -38,13 +38,15 @@ function getSwitchValue {
     local i=0
     local value=""
     local default="$(if [ $# -ge 2 ] ; then echo "$2" ; fi)"
-    for test_switch in "${BOXCLI_SWITCHES[@]}" ; do
-        temp="${BOXCLI_SWITCH_VALUES[${i}]}"
-        i=$((i+1))
-        [ "${switch}" != "${test_switch}" ] && continue
-        value="${temp}"
-        break
-    done
+    if (( 0 < "${#BOXCLI_SWITCHES[@]}" )) ; then
+        for test_switch in "${BOXCLI_SWITCHES[@]}" ; do
+            temp="${BOXCLI_SWITCH_VALUES[${i}]}"
+            i=$((i+1))
+            [ "${switch}" != "${test_switch}" ] && continue
+            value="${temp}"
+            break
+        done
+    fi
     if [ "" == "${value}" ] ; then
         value="$default"
     fi

@@ -1,3 +1,3 @@
 echo "Process VM: $(getSwitchValue "processvm")"
 
-returnQuiet
+setQuiet

@@ -6,7 +6,7 @@
 # @SEE http://stackoverflow.com/questions/8988824/generating-random-number-between-1-and-10-in-bash-shell-script
 #
 
-ip_address="$(box util read-project-file ".box.ip_address")" 
+ip_address="$(box util read-project-value ".box.ip_address")"
 
 if isEmpty "${ip_address}" ; then 
 	ip_address=""

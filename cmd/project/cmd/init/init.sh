@@ -1,3 +1,4 @@
+#@IgnoreInspection BashAddShebang
 #
 # Command: box project init <name>
 #
@@ -7,6 +8,8 @@
 #
 if ! noArgsPassed ; then
 	name="$1"
+else
+	name="WPLib Box"
 fi
 
 #
@@ -55,6 +58,11 @@ box_version="${box_version:-${BOXCLI_BOX_VERSION}}"
 ip_address="10.10.10.$(( ( RANDOM % 240 ) + 10 ))"
 
 #
+# Set the PHP version
+#
+php_version="${php_version:-7.0}"
+
+#
 # Set the host roles and hosts
 #
 domain_sans_ext="$(stripExtension "${hostname}")"
@@ -71,9 +79,9 @@ dev_webroot_path="$(sanitizePath "$(getSwitchValue "webroot-path" "${dev_webroot
 dev_core_path="$(sanitizePath "$(getSwitchValue "core-path" "${dev_core_path:-${dev_webroot_path}/wp}")")"
 dev_content_path="$(sanitizePath "$(getSwitchValue "content-path" "${dev_content_path:-${dev_webroot_path}/content}")")"
 
-webroot_path="${webroot_path:-www}"
-core_path="${core_path:-www}"
-content_path="${content_path:-www/wp-content}"
+webroot_path="${webroot_path:-}"
+core_path="${core_path:-}"
+content_path="${content_path:-wp-content}"
 
 #
 # Test to ensure we don't overwrite an existing directory
@@ -162,19 +170,50 @@ json="$(cat <<JSON
     "type": "${project_type}",
     "version": "${project_version}",
     "description": "${project_name}",
-    "site": {
-        "theme": "${site_theme}"
+    "framework": "wordpress",
+    "services": {
+        "database": "mysql",
+        "webserver": "nginx",
+        "processvm": "php${php_version}",
+        "kvstore": "redis"
+    },
+    "wordpress": {
+        "site": {
+            "theme": "${site_theme}"
+        },
+        "themes": {
+            "list": {}
+        },
+        "plugins":  {
+            "list": {}
+        },
+        "hosts": {
+            "list": {
+                "${local_role}": {
+                    "core_path": "${dev_core_path}",
+                    "content_path": "${dev_content_path}"
+                },
+                "${staging_role}": {
+                    "core_path": "${core_path}",
+                    "content_path": "${content_path}"
+                },
+                "${production_role}": {
+                    "core_path": "${core_path}",
+                    "content_path": "${content_path}"
+                }
+            }
+        }
+    },
+    "php": {
+        "version": "${php_version}",
+        "libraries": {
+            "list": {}
+        }
     },
     "box": {
         "hostname": "${hostname}",
         "version": "${box_version}",
         "ip_address": "${ip_address}"
-    },
-    "services": {
-        "database": "mysql",
-        "webserver": "nginx",
-        "processvm": "php7.0",
-        "kvstore": "redis"
     },
     "hosts": {
         "roles": {
@@ -185,21 +224,15 @@ json="$(cat <<JSON
         "list": {
             "${local_role}": {
                 "domain": "${local_domain}",
-                "webroot_path": "${dev_webroot_path}",
-                "core_path": "${dev_core_path}",
-                "content_path": "${dev_content_path}"
+                "webroot_path": "${dev_webroot_path}"
             },
             "${staging_role}": {
                 "domain": "${staging_domain}",
-                "webroot_path": "${webroot_path}",
-                "core_path": "${core_path}",
-                "content_path": "${content_path}"
+                "webroot_path": "${webroot_path}"
             },
             "${production_role}": {
                 "domain": "${production_domain}",
-                "webroot_path": "${webroot_path}",
-                "core_path": "${core_path}",
-                "content_path": "${content_path}"
+                "webroot_path": "${webroot_path}"
             }
         }
     }
@@ -233,6 +266,7 @@ if ! isDryRun ; then
     # Generate project.json
     #
     echo  -e "${json}"> $project_file
+
 
     #
     # Generate Vagrantfile
@@ -273,4 +307,4 @@ fi
 #
 # Skip outputting anything quitting this
 #
-returnQuiet
+setQuiet

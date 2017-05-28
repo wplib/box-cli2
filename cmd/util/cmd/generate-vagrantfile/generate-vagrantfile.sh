@@ -16,10 +16,3 @@ fi
 vagrant_file="$(box util load-template "Vagrantfile")"
 echo -e "${vagrant_file}" > $vagrant_filepath
 statusMsg "Vagrant file generated: ${vagrant_filepath}"
-
-
-
-
-
-
-

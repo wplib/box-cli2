@@ -8,20 +8,27 @@
 function parseTemplate {
     local left
     local right
+    local both
     local query
     local value
     local template="$1"
+    local depth=${depth:=0}
+    depth=$(( depth + 1 ))
     if [[ "${template}" =~ ^(.*)}}(.*)$ ]] ; then
         left="${BASH_REMATCH[1]}"
         right="${BASH_REMATCH[2]}"
         left="$(parseTemplate "${left}")"
-        echo -e "$(parseTemplate "${left}${right}")"
+        (( $? != 0 )) && exit 1
+        both="$(parseTemplate "${left}${right}")"
+        (( $? != 0 )) && exit 1
+        echo "${both}"
         return
     fi
     if [[ "${template}" =~ ^(.*){{(.*)$ ]] ; then
         left="${BASH_REMATCH[1]}"
         right="${BASH_REMATCH[2]}"
         right="$(parseTemplate "${right}")"
+        (( $? != 0 )) && exit 1
         echo -e "${left}${right}"
         return
     fi
@@ -33,7 +40,13 @@ function parseTemplate {
             query="${template}"
             value=""
         fi
-        result="$(box util read-project-file "${query}")"
+        result="$(readProjectValue "${query}")"
+        if isError "${result}" ; then
+            # No need to echo $BOXCLI_ERROR_VALUE because
+            # this is a recursive function that is not
+            # creating a subshell.
+            exit 1
+        fi
         if isEmpty "${result}" ; then
             result="${value}"
         fi
@@ -41,4 +54,8 @@ function parseTemplate {
         return
     fi
     echo -e "${template}"
+    if [ ${depth} -eq 1 ] ; then
+        throwError
+        exit 1
+    fi
 }

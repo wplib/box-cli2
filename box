@@ -6,7 +6,7 @@
 BOXCLI_INCLUDE_DIR=""
 BOXCLI_CLAUSES=()
 
-if [ "" == "${BOXCLI_RECURSION}" ]; then 
+if [ "" == "${BOXCLI_RECURSION}" ]; then
     export BOXCLI_RECURSION=0
 fi 
 
@@ -18,8 +18,6 @@ else
     #This works on Ubuntu if realpath has been installed
     BOXCLI_ROOT_DIR=$(dirname $(realpath "$0"))
 fi
-
-
 
 # Load BOXCLI_* functions and constants
 source "${BOXCLI_ROOT_DIR}/inc/const.sh" "${BOXCLI_ROOT_DIR}"

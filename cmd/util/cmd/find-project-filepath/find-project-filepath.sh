@@ -1,5 +1,5 @@
 #
-# Command: box util find-project-file
+# Command: box util find-project-filepath
 #
 
 project_dir="$(box util find-project-dir)"
