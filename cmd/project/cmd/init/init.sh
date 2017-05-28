@@ -115,6 +115,7 @@ fi
 if isJSON || isQuiet ; then
     summary=""
 else
+    plural="host's"
     summary="$(cat <<TEXT
 Initializing project...
 
@@ -139,20 +140,25 @@ Initializing project...
   Hosts:
     ${local_role}:
       domain:         ${local_domain}
-      webroot_path:   ${dev_webroot_path}
-      core_path:      ${dev_core_path}
-      content_path:   ${dev_content_path}
+      webroot_path:   ~/${dev_webroot_path}
+      core_path:      ~/${dev_core_path}
+      content_path:   ~/${dev_content_path}
     ${staging_role}:
       domain:         ${staging_domain}
-      webroot_path:   ${webroot_path}
-      core_path:      ${core_path}
-      content_path:   ${content_path}
+      webroot_path:   ~/${webroot_path}
+      core_path:      ~/${core_path}
+      content_path:   ~/${content_path}
     ${production_role}:
       domain:         ${production_domain}
-      webroot_path:   ${webroot_path}
-      core_path:      ${core_path}
-      content_path:   ${content_path}
+      webroot_path:   ~/${webroot_path}
+      core_path:      ~/${core_path}
+      content_path:   ~/${content_path}
 
+NOTE: ~/ is shorthand for the ${plural} root directory.
+DO NOT use ~/ in your project.json file.
+For the server in the local role ~/ is also the project directory.
+When deployed to a staging or production host, that structure may
+differ because your WordPress host may enforce a specific structure.
 
 Project initialized.
 TEXT
