@@ -6,12 +6,14 @@
 
 set -e
 project_dir="$(box util find-project-dir)"
+
 if isEmpty "${project_dir}" ; then
     stdErr "No [project.json] found in [$(pwd)] or in parent directories."
     exit 1
-else
-    echo -e "${project_dir}"
 fi
 
+echo -e "${project_dir}"
+
+setQuiet
 
 

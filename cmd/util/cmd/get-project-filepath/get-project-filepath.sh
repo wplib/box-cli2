@@ -16,8 +16,13 @@ else
             return 0
         else
             stdErr "ERROR: Invalid JSON in ${project_filepath}."
-            stdErr "Please validate at jsonformatter.org, correct the error and try again."
-            throwError
+
+            #
+            # We only want one error on the error stack
+            # So we output the 2nd one with addErr, not stdErr
+            #
+            addErr "Please validate at jsonformatter.org, correct the error and try again."
+
             exit 1
         fi
     fi

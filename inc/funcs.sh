@@ -1,6 +1,5 @@
 # funcs.sh
 
-
 source "${BOXCLI_INCLUDE_DIR}/params.sh"
 source "${BOXCLI_INCLUDE_DIR}/templates.sh"
 
@@ -24,18 +23,6 @@ function fileExists {
     return 1
 }
 
-function isError {
-    (( 0 == $# )) && return 0
-    if [ "${BOXCLI_ERROR_VALUE}" == "$1" ] ; then
-        return 0
-    fi
-    return 1
-}
-
-function throwError {
-    echo "${BOXCLI_ERROR_VALUE}"
-}
-
 function isEmpty {
     (( 0 == $# )) && return 0
     if [ "" == "$1" ] ; then
@@ -43,7 +30,6 @@ function isEmpty {
     fi
     return 1
 }
-
 
 function strContains {
     (( $# < 2 )) && return 1
@@ -112,8 +98,7 @@ function getLocalDomain {
 function readProjectValue {
     if (( 0 < $# )) ; then
         local result="$(box util read-project-value "$1")"
-        if isError "${result}" ; then
-            throwError
+        if isError ; then
             exit 1
         fi
         echo -e "${result}"
@@ -137,7 +122,11 @@ function getWebrootPath {
 }
 
 function getProjectDir {
-    echo "$(box util get-project-dir)"
+    local project_dir="$(box util get-project-dir)"
+    if isError ; then
+        exit 1
+    fi
+    echo "${project_dir}"
 }
 
 function getProjectFilePath {
@@ -153,9 +142,11 @@ function findProjectDir {
 }
 
 function pushProjectDir {
-    local project_dir="$(getProjectDir)"
-    export BOXCLI_PROJECT_DIR="${project_dir}"
-    pushDir "${project_dir}"
+    export BOXCLI_PROJECT_DIR="$(getProjectDir)"
+    if isError ; then
+        exit 1
+    fi
+    pushDir "${BOXCLI_PROJECT_DIR}"
 }
 
 function popProjectDir {
@@ -163,14 +154,16 @@ function popProjectDir {
 }
 
 function hasProjectDir {
-    if [[ "" == "$(findProjectDir)" ]] ; then
+    export BOXCLI_PROJECT_DIR="$(findProjectDir)"
+    if popError ; then
         return 1
     fi
     return 0
 }
 
 function hasProjectFile {
-    if [[ "" == "$(findProjectFilePath)" ]] ; then
+    export BOXCLI_PROJECT_FILEPATH="$(findProjectFilePath)"
+    if popError ; then
         return 1
     fi
     return 0
@@ -195,6 +188,9 @@ function statusMsg {
     (( 0 < $# )) && stdOut "$1"
 }
 
+#
+# Output to file 1 (standard output)
+#
 function stdOut {
     (( 0 == $# )) && return
     if ! isQuiet ; then
@@ -202,9 +198,28 @@ function stdOut {
     fi
 }
 
+#
+# Output to file 2 (error output)  AND push error onto error stack
+#
 function stdErr {
-    export BOXCLI_ERROR=1
-    (( 0 < $# )) && echo -e "$1" 1>&2
+    if (( 0 == $# )) ; then
+        addErr "Unspecified error"
+    else
+        pushError "$1"
+        addErr "$1"
+    fi
+}
+
+#
+# Output to stdErr but without adding error to error stack
+#
+function addErr {
+    if (( 0 == $# )) ; then
+        error="Unspecified error"
+    else
+        error="$1"
+    fi
+    echo -e "$1" 1>&2
 }
 
 function isHost {

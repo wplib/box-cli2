@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 #
 # reset.sh
+#
+# Named after reset.css - https://meyerweb.com/eric/tools/css/reset/
+#
 
 # Set Bash Strict Mode (Unofficial) 
 # See http://redsymbol.net/articles/unofficial-bash-strict-mode/

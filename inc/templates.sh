@@ -18,9 +18,9 @@ function parseTemplate {
         left="${BASH_REMATCH[1]}"
         right="${BASH_REMATCH[2]}"
         left="$(parseTemplate "${left}")"
-        (( $? != 0 )) && exit 1
+        [[ hasError ]] && exit 1
         both="$(parseTemplate "${left}${right}")"
-        (( $? != 0 )) && exit 1
+        [[ hasError ]] && exit 1
         echo "${both}"
         return
     fi
@@ -28,7 +28,7 @@ function parseTemplate {
         left="${BASH_REMATCH[1]}"
         right="${BASH_REMATCH[2]}"
         right="$(parseTemplate "${right}")"
-        (( $? != 0 )) && exit 1
+        [[ hasError ]] && exit 1
         echo -e "${left}${right}"
         return
     fi
@@ -41,21 +41,16 @@ function parseTemplate {
             value=""
         fi
         result="$(readProjectValue "${query}")"
-        if isError "${result}" ; then
-            # No need to echo $BOXCLI_ERROR_VALUE because
-            # this is a recursive function that is not
-            # creating a subshell.
-            exit 1
-        fi
+        [[ hasError ]] && exit 1
         if isEmpty "${result}" ; then
             result="${value}"
         fi
         echo "${result}"
         return
     fi
-    echo -e "${template}"
-    if [ ${depth} -eq 1 ] ; then
-        throwError
+    if hasError ; then
         exit 1
+    else
+        echo -e "${template}"
     fi
 }

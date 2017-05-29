@@ -1,5 +1,12 @@
 # params.sh
 
+#
+# Todo:
+# Figure out how to handle these which should be for the current run
+# but are named like export variables.
+# Also need to figure out which of them should be accessible by subshells.
+#
+
 # Clause names
 BOXCLI_CLAUSES=()
 # Switch names
@@ -15,14 +22,36 @@ BOXCLI_SWITCHES_STR=""
 # Valid Switchs surrounded/separated by '|'
 BOXCLI_VALID_SWITCHES_STR="|"
 
-BOXCLI_IS_QUIET=""
-BOXCLI_IS_JSON=""
-BOXCLI_IS_COMPOSER=""
-BOXCLI_IS_DRY_RUN=""
-BOXCLI_IS_NO_PROMPT=""
+export BOXCLI_IS_QUIET="*"
+export BOXCLI_IS_JSON="*"
+export BOXCLI_IS_COMPOSER="*"
+export BOXCLI_IS_DRY_RUN="*"
+export BOXCLI_IS_NO_PROMPT="*"
+
+boxcliSavedGlobalSwitches=()
+
+function saveGlobalSwitches {
+    boxcliSavedGlobalSwitches=()
+    boxcliSavedGlobalSwitches+=("${BOXCLI_IS_QUIET}")
+    boxcliSavedGlobalSwitches+=("${BOXCLI_IS_JSON}")
+    boxcliSavedGlobalSwitches+=("${BOXCLI_IS_COMPOSER}")
+    boxcliSavedGlobalSwitches+=("${BOXCLI_IS_DRY_RUN}")
+    boxcliSavedGlobalSwitches+=("${BOXCLI_IS_NO_PROMPT}")
+}
+
+function restoreGlobalSwitches {
+    if (( 5 == ${#boxcliSavedGlobalSwitches[@]} )) ; then
+        BOXCLI_IS_QUIET="${boxcliSavedGlobalSwitches[0]}"
+        BOXCLI_IS_JSON="${boxcliSavedGlobalSwitches[1]}"
+        BOXCLI_IS_COMPOSER="${boxcliSavedGlobalSwitches[2]}"
+        BOXCLI_IS_DRY_RUN="${boxcliSavedGlobalSwitches[3]}"
+        BOXCLI_IS_NO_PROMPT="${boxcliSavedGlobalSwitches[4]}"
+    fi
+    boxcliSavedGlobalSwitches=()
+}
 
 function setQuiet {
-    BOXCLI_IS_QUIET="yes"
+    export BOXCLI_IS_QUIET="yes"
 }
 
 function hasSwitchValue {
@@ -56,7 +85,7 @@ function getSwitchValue {
 function testYesNoSwitch {
     local varName="$1"
     local switch="$2"
-    if [ "" != "${!varName}" ] ; then
+    if [ "*" != "${!varName}" ] ; then
         if [ "yes" == "${!varName}" ] ; then
             eval $varName='yes'
             return 0

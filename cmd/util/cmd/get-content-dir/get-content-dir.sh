@@ -3,5 +3,6 @@
 #
 
 echo -e "$(box util find-project-dir)/$(box util get-content-path)"
+setQuiet
 exit
 

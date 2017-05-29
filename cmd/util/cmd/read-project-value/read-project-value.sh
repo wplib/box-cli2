@@ -8,8 +8,7 @@ fi
 
 query="$1"
 project_filepath="$(getProjectFilePath)"
-if isError "${project_filepath}" ; then
-    throwError
+if isError ; then
     exit 1
 else
     setQuiet
