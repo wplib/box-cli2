@@ -11,17 +11,6 @@
 export BOXCLI_ERRORS_FILE="${BOXCLI_TEMP_DIR%/}/errors"
 
 #
-# Return true if the most recent action was an error
-#
-function isError {
-    local error="$(getError)"
-    if isEmpty "${error}" ; then
-        return 1
-    fi
-    return 0
-}
-
-#
 # Initialize Error handling system by creating a named pipe
 #
 function initErrorSystem {
@@ -37,10 +26,7 @@ function pushError {
     else
         message="$1"
     fi
-    #
-    # See: https://unix.stackexchange.com/a/114245/144192
-    #
-    echo "${message}" | tr -ds "\n\r" " " >> ${BOXCLI_ERRORS_FILE}
+    echo "${message}" | stripCrLf >> ${BOXCLI_ERRORS_FILE}
 }
 
 #

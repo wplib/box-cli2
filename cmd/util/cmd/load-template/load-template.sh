@@ -15,7 +15,7 @@ if [ ! -f "${template_file}" ] ; then
 	exit 1
 else
 	result="$(parseTemplate "$(cat "${template_file}")")"
-	if isError ; then
+	if hasError ; then
 	    exit 1
     fi
     echo -e "${result}"

@@ -70,6 +70,15 @@ function stripExtension {
 }
 
 #
+# Strip Carriage Returns and Line Feeds
+# See: https://unix.stackexchange.com/a/114245/144192
+#
+function stripCrLf {
+   (( 0 == $# )) && return
+   echo "$1" | tr "\n\r" " "
+}
+
+#
 # Return file extension, converting to lowercase for easy comparison
 #
 function getFileExtension {
@@ -92,46 +101,59 @@ function toUpperCase {
 }
 
 function getLocalDomain {
-    echo "$(box util get-local-domain)"
+    local local_domain="$(box util get-local-domain)"
+    hasError && exit 1
+    echo "${local_domain}"
+}
+
+function getHostname {
+    local hostname="$(box util get-hostname)"
+    hasError && exit 1
+    echo "${hostname}"
 }
 
 function readProjectValue {
     if (( 0 < $# )) ; then
         local result="$(box util read-project-value "$1")"
-        if isError ; then
-            exit 1
-        fi
+        hasError && exit 1
         echo -e "${result}"
     fi
 }
 
 function getContentDir {
-    echo "$(box util get-content-dir)"
+    local content_dir="$(box util get-content-dir)"
+    hasError && exit 1
+    echo "${content_dir}"
 }
 
 function getContentPath {
-    echo "$(box util get-content-path)"
+    local content_path="$(box util get-content-path)"
+    hasError && exit 1
+    echo "${content_path}"
 }
 
 function getWebrootDir {
-    echo "$(box util get-webroot-dir)"
+    local webroot_dir="$(box util get-webroot-dir)"
+    hasError && exit 1
+    echo "${webroot_dir}"
 }
 
 function getWebrootPath {
-    echo "$(box util get-webroot-path)"
+    local webroot_path="$(box util get-webroot-path)"
+    hasError && exit 1
+    echo "${webroot_path}"
 }
 
 function getProjectDir {
     local project_dir="$(box util get-project-dir)"
-    if isError ; then
-        exit 1
-    fi
+    hasError && exit 1
     echo "${project_dir}"
-
 }
 
 function getProjectFilePath {
-    echo "$(box util get-project-filepath)"
+    local project_filepath="$(box util get-project-filepath)"
+    hasError && exit 1
+    echo "${project_filepath}"
 }
 
 function findProjectFilePath {
@@ -144,10 +166,11 @@ function findProjectDir {
 
 function pushProjectDir {
     export BOXCLI_PROJECT_DIR="$(getProjectDir)"
-    if isError ; then
+    if hasError ; then
         exit 1
     fi
     pushDir "${BOXCLI_PROJECT_DIR}"
+    echo "${BOXCLI_PROJECT_DIR}"
 }
 
 function popProjectDir {
