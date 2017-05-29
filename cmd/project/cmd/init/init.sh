@@ -289,13 +289,13 @@ Initializing project...
       core_path:      ~/${core_path}
       content_path:   ~/${content_path}
 
-NOTE: ~/ is shorthand for the ${plural} root directory.
-DO NOT use ~/ in your project.json file.
+NOTE: ~/ is only shorthand here for the ${plural} root directory.
+DO NOT use "~/" as a path prefix in your project.json file.
 For the server in the local role ~/ is also the project directory.
 When deployed to a staging or production host, that structure may
 differ because your WordPress host may enforce a specific structure.
 
-Project initialized.
+Project [$(pwd)/] initialized.
 TEXT
         )"
         #
