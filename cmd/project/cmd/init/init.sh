@@ -110,62 +110,6 @@ if [ -f "${project_file}" ] ; then
 fi
 
 #
-# Output summary, it caller did request it be suppressed
-#
-if isJSON || isQuiet ; then
-    summary=""
-else
-    plural="host's"
-    summary="$(cat <<TEXT
-Initializing project...
-
-  Project:
-    Project Dir:    ${project_dir}
-    Project File:   ${project_file}
-    Project Name:   ${project_name}
-    Project Slug:   ${project_slug}
-    Project Type:   ${project_type}
-    Shortname:      ${shortname}
-    Version:        ${project_version}
-  Box:
-    Hostname:       ${hostname}
-    IP Address:     ${ip_address}
-    Version:        ${box_version}
-  Site:
-    Theme:          ${site_theme}
-  Host Roles:
-    local:          ${local_role}
-    on_commit:      ${staging_role}
-    production:     ${production_role}
-  Hosts:
-    ${local_role}:
-      domain:         ${local_domain}
-      webroot_path:   ~/${dev_webroot_path}
-      core_path:      ~/${dev_core_path}
-      content_path:   ~/${dev_content_path}
-    ${staging_role}:
-      domain:         ${staging_domain}
-      webroot_path:   ~/${webroot_path}
-      core_path:      ~/${core_path}
-      content_path:   ~/${content_path}
-    ${production_role}:
-      domain:         ${production_domain}
-      webroot_path:   ~/${webroot_path}
-      core_path:      ~/${core_path}
-      content_path:   ~/${content_path}
-
-NOTE: ~/ is shorthand for the ${plural} root directory.
-DO NOT use ~/ in your project.json file.
-For the server in the local role ~/ is also the project directory.
-When deployed to a staging or production host, that structure may
-differ because your WordPress host may enforce a specific structure.
-
-Project initialized.
-TEXT
-    )"
-fi
-
-#
 # Start building up the JSON file
 #
 json="$(cat <<JSON
@@ -303,6 +247,57 @@ if isJSON ; then
     stdOut "${json}"
 else
     if ! isQuiet ; then
+        #
+        # Generate summary, it caller did request it be suppressed
+        #
+        plural="host's"
+        summary="$(cat <<TEXT
+Initializing project...
+
+  Project:
+    Project Dir:    ${project_dir}
+    Project File:   ${project_file}
+    Project Name:   ${project_name}
+    Project Slug:   ${project_slug}
+    Project Type:   ${project_type}
+    Shortname:      ${shortname}
+    Version:        ${project_version}
+  Box:
+    Hostname:       ${hostname}
+    IP Address:     ${ip_address}
+    Version:        ${box_version}
+  Site:
+    Theme:          ${site_theme}
+  Host Roles:
+    local:          ${local_role}
+    on_commit:      ${staging_role}
+    production:     ${production_role}
+  Hosts:
+    ${local_role}:
+      domain:         ${local_domain}
+      webroot_path:   ~/${dev_webroot_path}
+      core_path:      ~/${dev_core_path}
+      content_path:   ~/${dev_content_path}
+    ${staging_role}:
+      domain:         ${staging_domain}
+      webroot_path:   ~/${webroot_path}
+      core_path:      ~/${core_path}
+      content_path:   ~/${content_path}
+    ${production_role}:
+      domain:         ${production_domain}
+      webroot_path:   ~/${webroot_path}
+      core_path:      ~/${core_path}
+      content_path:   ~/${content_path}
+
+NOTE: ~/ is shorthand for the ${plural} root directory.
+DO NOT use ~/ in your project.json file.
+For the server in the local role ~/ is also the project directory.
+When deployed to a staging or production host, that structure may
+differ because your WordPress host may enforce a specific structure.
+
+Project initialized.
+TEXT
+        )"
         #
         # Output summary, if caller did not request it be suppressed.
         #
