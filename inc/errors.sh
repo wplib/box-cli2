@@ -68,16 +68,17 @@ function popError {
 # Test to see if any errors occurred
 #
 function hasError {
-    if getError ; then
+    local errors="$(cat "${BOXCLI_ERRORS_FILE}")"
+    if isEmpty "${errors}" ; then
         #
-        # Has an error, so 'hasError()` returns true
+        # Has no error, so 'hasError()` returns false aka 1
         #
-        return 0
+        return 1
     fi
     #
-    # Has no error, so 'hasError()` returns false
+    # Has an error, so 'hasError()` returns true aka 0
     #
-    return 1
+    return 0
 }
 
 #
@@ -87,7 +88,10 @@ function hasError {
 #
 function getError {
     if ! [ -f "${BOXCLI_ERRORS_FILE}" ] ; then
-        return 0
+        #
+        # If no error file, there is no error. Return 'false' aka 1
+        #
+        return 1
     fi
 
     local removeError
@@ -105,6 +109,7 @@ function getError {
     IFS=$'\n' read -rd '' -a errors <<<"$(cat "${BOXCLI_ERRORS_FILE}")"
     IFS="${saveIFS}"
     local count=${#errors[@]}
+    (( 0 == $count )) && return 1
     local last=$(( $count - 1 ))
     local error="${errors[$last]}"
     if ! isEmpty "${removeError}" ; then
@@ -115,7 +120,10 @@ function getError {
         printf "%s\n" "${errors[@]}" > ${BOXCLI_ERRORS_FILE}
     fi
     echo "${error}"
-    return 1
+    #
+    # If has error. Return 'true' aka 0
+    #
+    return 0
 }
 
 #

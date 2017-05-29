@@ -18,9 +18,9 @@ function parseTemplate {
         left="${BASH_REMATCH[1]}"
         right="${BASH_REMATCH[2]}"
         left="$(parseTemplate "${left}")"
-        [[ hasError ]] && exit 1
+        hasError && exit 1
         both="$(parseTemplate "${left}${right}")"
-        [[ hasError ]] && exit 1
+        hasError && exit 1
         echo "${both}"
         return
     fi
@@ -28,7 +28,7 @@ function parseTemplate {
         left="${BASH_REMATCH[1]}"
         right="${BASH_REMATCH[2]}"
         right="$(parseTemplate "${right}")"
-        [[ hasError ]] && exit 1
+        hasError && exit 1
         echo -e "${left}${right}"
         return
     fi
@@ -41,7 +41,7 @@ function parseTemplate {
             value=""
         fi
         result="$(readProjectValue "${query}")"
-        [[ hasError ]] && exit 1
+        hasError && exit 1
         if isEmpty "${result}" ; then
             result="${value}"
         fi
