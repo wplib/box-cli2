@@ -150,8 +150,8 @@ if (( 0 < "${#BOXCLI_CLAUSES[@]}" )) ; then
         BOXCLI_ARGNAMES=("${__argNames[@]}")
         source "${__filepath}" "$@"
     fi
+
     if (( 1 == $BOXCLI_NESTING_DEPTH )) ; then
-        cancelErrorSystem
         rm -rf "${BOXCLI_TEMP_DIR}"
         statusMsg "Done."
     fi
@@ -160,3 +160,4 @@ if (( 0 < "${#BOXCLI_CLAUSES[@]}" )) ; then
     #
     restoreGlobalSwitches
 fi
+

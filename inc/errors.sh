@@ -6,29 +6,26 @@
 #
 
 #
-# Array containing error messages for all runs of the box
-# No errors means a single element of value 0 because
-# accessing zero element arrays in bash is problematic.
+# Use files: https://stackoverflow.com/a/26811936/102699
 #
-export BOXCLI_ERRORS=( 0 )
+export BOXCLI_ERRORS_FILE="${BOXCLI_TEMP_DIR%/}/errors"
+
+#
+# Return true if the most recent action was an error
+#
+function isError {
+    local error="$(getError)"
+    if isEmpty "${error}" ; then
+        return 1
+    fi
+    return 0
+}
 
 #
 # Initialize Error handling system by creating a named pipe
 #
 function initErrorSystem {
-    #
-    # Nothing needed
-    #
-    local x=0
-}
-
-#
-# Delete the named error pipe for this
-#
-function cancelErrorSystem {
-    if [ "1" == "${BOXCLI_NESTING_DEPTH}" ] ; then
-        export BOXCLI_ERRORS=( 0 )
-    fi
+    touch "${BOXCLI_ERRORS_FILE}"
 }
 
 #
@@ -41,9 +38,9 @@ function pushError {
         message="$1"
     fi
     #
-    # See: https://stackoverflow.com/a/1951523/102699
+    # See: https://unix.stackexchange.com/a/114245/144192
     #
-    BOXCLI_ERRORS+=("${message}")
+    echo "${message}" | tr -ds "\n\r" " " >> ${BOXCLI_ERRORS_FILE}
 }
 
 #
@@ -89,6 +86,10 @@ function hasError {
 #   $1 - removeError - Any non-empty value to remove the error from the error stack.
 #
 function getError {
+    if ! [ -f "${BOXCLI_ERRORS_FILE}" ] ; then
+        return 0
+    fi
+
     local removeError
     if (( 1 <= $# )) ; then
         removeError="$1"
@@ -96,41 +97,32 @@ function getError {
         removeError=""
     fi
 
-    local count=${#BOXCLI_ERRORS[@]}
-    if (( 1 >= ${count} )) ; then
-        #
-        # Has no error, so 'getError()` returns false
-        #
-        return 1
-    fi
+    local errors
+    local saveIFS="${IFS}"
+    #
+    # See: https://stackoverflow.com/a/35383375/102699
+    #
+    IFS=$'\n' read -rd '' -a errors <<<"$(cat "${BOXCLI_ERRORS_FILE}")"
+    IFS="${saveIFS}"
+    local count=${#errors[@]}
     local last=$(( $count - 1 ))
-    error="${BOXCLI_ERRORS[$last]}"
+    local error="${errors[$last]}"
     if ! isEmpty "${removeError}" ; then
-        unset BOXCLI_ERRORS[$last]
+        unset errors[$last]
+        #
+        # See: https://stackoverflow.com/a/20243503/102699
+        #
+        printf "%s\n" "${errors[@]}" > ${BOXCLI_ERRORS_FILE}
     fi
     echo "${error}"
-    #
-    # Has an error, so 'getError()` returns true
-    #
-    return 0
+    return 1
 }
 
 #
 # Remove accumulated errors from the error system
 #
 function clearErrors {
-    export BOXCLI_ERRORS=( 0 )
-}
-
-#
-# Return true if the most recent action was an error
-#
-function isError {
-    local error="$(getError)"
-    if isEmpty "${error}" ; then
-        return 1
-    fi
-    return 0
+    rm "${BOXCLI_ERRORS_FILE}"
 }
 
 #

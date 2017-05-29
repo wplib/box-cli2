@@ -127,6 +127,7 @@ function getProjectDir {
         exit 1
     fi
     echo "${project_dir}"
+
 }
 
 function getProjectFilePath {
