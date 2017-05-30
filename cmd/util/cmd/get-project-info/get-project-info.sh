@@ -8,7 +8,10 @@
 
 query="$1"
 default="$(if [ 2 == "$#" ] ; then echo "$2" ; fi)"
-value="$(box util read-project-value "$1")"
+value="$(box util read-project-file-value "$1")"
+echo $value
+exit
+hasError && exit 1
 if isEmpty "${value}" ; then 
 	if ! isEmpty "${default}" ; then
 		value="${default}";

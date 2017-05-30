@@ -40,7 +40,7 @@ function parseTemplate {
             query="${template}"
             value=""
         fi
-        result="$(readProjectValue "${query}")"
+        result="$(readProjectFileValue "${query}")"
         hasError && exit 1
         if isEmpty "${result}" ; then
             result="${value}"

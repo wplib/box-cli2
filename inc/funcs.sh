@@ -112,9 +112,9 @@ function getHostname {
     echo "${hostname}"
 }
 
-function readProjectValue {
+function readProjectFileValue {
     if (( 0 < $# )) ; then
-        local result="$(box util read-project-value "$1")"
+        local result="$(box util read-project-file-value "$1")"
         hasError && exit 1
         echo -e "${result}"
     fi
