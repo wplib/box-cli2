@@ -3,6 +3,18 @@
 source "${BOXCLI_INCLUDE_DIR}/params.sh"
 source "${BOXCLI_INCLUDE_DIR}/templates.sh"
 
+function getLatestWordPressVersion {
+    local wp_version="$(box util get-latest-wordpress-version)"
+    hasError && exit 1
+    echo "${wp_version}"
+}
+
+function findLatestWordPressVersion {
+    local wp_version="$(box util find-latest-wordpress-version)"
+    hasError && exit 1
+    echo "${wp_version}"
+}
+
 function getBoxCliRootDir {
     echo "${BOXCLI_ROOT_DIR}"
 }
