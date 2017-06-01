@@ -47,6 +47,8 @@ if (( 1 == ${BOXCLI_NESTING_DEPTH} )) ; then
 fi
 BOXCLI_LOCAL_TMP="$(mktemp -d "${BOXCLI_TEMP_DIR}/@XXXX")"
 mkdir -p "${BOXCLI_LOCAL_TMP}"
+echo "$*" > ${BOXCLI_LOCAL_TMP}/command
+
 
 #
 # Load error handling system
