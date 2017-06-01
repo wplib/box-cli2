@@ -34,13 +34,16 @@ fi
 #
 # If all the above tests pass then this is a WPEngine Site Fullbackup
 # 
-cat <<json
+cat <<JSON
 {
 	"source": "wpengine",
 	"scope": "site",
 	"type": "fullbackup", 
 	"slug": "wpengine-site-fullbackup",
-	"filepath": "${filepath}"
+	"filepath": "${filepath}",
+    "webroot_path": "",
+    "core_path": "",
+    "content_path": "wp-content"
 }
-json
+JSON
 return 0
