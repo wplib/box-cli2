@@ -124,6 +124,16 @@ function getHostname {
     echo "${hostname}"
 }
 
+function readJsonValue {
+    if (( 1 < $# )) ; then
+        json="$1"
+        query="$2"
+        local result="$(box util read-json-value "${json}" "${query}")"
+        hasError && exit 1
+        echo -e "${result}"
+    fi
+}
+
 function readProjectFileValue {
     if (( 0 < $# )) ; then
         local result="$(box util read-project-file-value "$1")"
