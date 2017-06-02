@@ -8,9 +8,9 @@ if [ "0" = "$#" ] ; then
 	exit 1
 fi
 
-import_filepath="$1"
+import_filepath="$(realPath "$1")"
 
-if [ ! -f "${import_filepath}" ] ; then 
+if [ ! -f "${import_filepath}" ] ; then
 	stdErr "The import file [${import_filepath}] does not exist."
 	exit 1
 fi
@@ -30,29 +30,31 @@ fi
 # "pi" means project import
 #
 tmp_dir="${BOXCLI_TEMP_DIR}/pi"
+ensureDir "${tmp_dir}"
 
+source="$(readJsonValue "${json}" ".source")"
+hasError && exit 1
+scope="$(readJsonValue "${json}" ".scope")"
+hasError && exit 1
+type="$(readJsonValue "${json}" ".type")"
+hasError && exit 1
 
-#source importer here
+#
+# Calculate the importer filename
+#
+importer_filepath="${BOXCLI_ROOT_DIR}/imp/${source}-${scope}-${type}-importer.sh"
 
+if ! [ -f "${importer_filepath}" ] ; then
+    stdErr "The importer ["${importer_filepath}"] does not exist."
+    exit 1
+fi
 
-exit
+statusMsg "Importing [${import_filepath}]..."
 
-while
-	if [ ! -d "${webroot_dir}" ] ; then
-		break
-	fi
-	if [ "" == "$(ls "${webroot_dir}")" ] ; then
-		break
-	fi
-	if ! box webroot archive ; then
-		exit 1
-	fi
-	sudo rm -rf "${webroot_dir}"
-	if ! box webroot archive ; then
-		exit 1
-	fi
-do false ; done
+#
+# Run the selected importer
+#
+source "${importer_filepath}" "${import_filepath}" "${json}" "${tmp_dir}"
 
-popProjectDir
-
-exit
+statusMsg "Import of [${import_filepath}] complete."
+setQuiet

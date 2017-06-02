@@ -3,6 +3,80 @@
 source "${BOXCLI_INCLUDE_DIR}/params.sh"
 source "${BOXCLI_INCLUDE_DIR}/templates.sh"
 
+function realPath() {
+    local realpath
+    local saveIFS
+    local index
+    local previous
+    if [[ $1 = /* ]] ; then
+        realpath="$1"
+    else
+        realpath="$(pwd)/${1#./}"
+    fi
+    saveIFS="${IFS}"
+    IFS='/'
+    read -r -a segments <<<"$realpath"
+    index="${#segments[@]}"
+    while [ $index -gt 0 ] ; do
+        ((index--))
+        if [ "." == "${segments[$index]}" ] ; then
+            segments[$index]=""
+            continue
+        fi
+        if [ ".." == "${segments[$index]}" ] ; then
+            segments[$index]=""
+            ((index--))
+            segments[$index]=""
+            continue
+        fi
+    done
+    echo "${segments[*]}" | sed -e 's#///#/#g'
+    IFS="${saveIFS}"
+}
+
+function ensureDir {
+    (( 0 == $# )) && return 1
+    dir="$1"
+    mkdir -p "${dir}"
+}
+
+function changeAbsDir {
+    (( 0 == $# )) && return 1
+    abs_dir="$1"
+    if ! [ -d "${abs_dir}" ] ; then
+        mkdir -p "${abs_dir}"
+    fi
+    if ! [ -d "${abs_dir}" ] ; then
+        return 1
+    fi
+    cd "${abs_dir}"
+}
+
+function removeDir {
+    (( 0 == $# )) && return 1
+    dir="$1"
+    rm -rf "${dir}"
+}
+
+function moveFiles {
+    (( 0 == $# )) && return 1
+    from_file="$1"
+    (( 1 == $# )) && to_file="."
+    to_file="${to_file:=$2}"
+
+    #from_path="${from_file:${#BOXCLI_TEMP_DIR}}"
+    #statusMsg "Moving [${from_path}] to [${to_file}]..."
+
+    from_dir="$(dirname "${from_file}")"
+
+    # Do this so globs like 'wp-*.php' will work.
+    from_base="${from_file:${#from_dir}}"
+
+    set +o errexit
+    mv "${from_dir}"$from_base "${to_file}" >/dev/null  2>&1
+    set -o errexit
+}
+
 function getLatestWordPressVersion {
     local wp_version="$(box util get-latest-wordpress-version)"
     hasError && exit 1
@@ -146,6 +220,12 @@ function getContentDir {
     local content_dir="$(box util get-content-dir)"
     hasError && exit 1
     echo "${content_dir}"
+}
+
+function getCorePath {
+    local core_path="$(box util get-core-path)"
+    hasError && exit 1
+    echo "${core_path}"
 }
 
 function getContentPath {
