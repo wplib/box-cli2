@@ -51,12 +51,14 @@ statusMsg "Moving files to the project directory..."
 ensureDir "archive"
 ensureDir "sql"
 
+sql_import="${project_dir}/sql/wordpress.sql"
+
 #
 # WPEngine puts the database into the ZIP file in /wp-content/ as mysql.sql
 #
 if [ -f "${tmp_dir}/wp-content/mysql.sql" ] ; then
     ensureDir "sql"
-    moveFiles "${tmp_dir}/wp-content/mysql.sql" "sql/project.sql"
+    moveFiles "${tmp_dir}/wp-content/mysql.sql"  "${sql_import}"
 fi
 
 changeAbsDir "${webroot_dir}"
@@ -103,10 +105,25 @@ vagrant up
 hostname="$(cat HOSTNAME)"
 open "http://${hostname}/wp/wp-admin"
 
+if ! isEmpty "$(cat "${sql_import}" | grep "INFORMATION_SCHEMA.SESSION_VARIABLES")" ; then
+    #
+    # Set MySQL 5.6 compatibility if 5.6 syntax found in wordpress.sql
+    # @see: https://dba.stackexchange.com/a/63434/55079
+    #
+    echo "UPDATE mysql.user SET Super_Priv='Y' WHERE user='user1' AND host='%';"  > $tmp_dir/fix56.sql
+    echo "SET GLOBAL show_compatibility_56 = ON;" >> $tmp_dir/fix56.sql
+
+    echo [client] > $tmp_dir/mysql.defaults
+    echo user=root >> $tmp_dir/mysql.defaults
+    echo password= >> $tmp_dir/mysql.defaults
+
+    mysql --defaults-extra-file="${tmp_dir}/mysql.defaults" wordpress < $tmp_dir/fix56.sql
+    rm $tmp_dir/mysql.defaults
+    rm "${tmp_dir}/fix56.sql"
+fi
+box import-db wordpress.sql
+
 
 #TODO
 # Handle /www/blog
 # Handle adding reference to updating to define( 'DB_HOST', '172.17.0.1' );
-# In BOX
-#   mysql -e "SET GLOBAL show_compatibility_56=ON;"
-#   box import-db project.sql
