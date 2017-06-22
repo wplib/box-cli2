@@ -26,6 +26,8 @@ export BOXCLI_PROJECT_FILEPATH="${BOXCLI_PROJECT_FILEPATH:=""}"
 # Default Local Top Level Domain, e.g. "example.dev"
 export BOXCLI_DEFAULT_LOCAL_TLD=".dev"
 
+# The API URL to use to check for the WordPress version"
+export BOXCLI_WPORG_API_VERSION_CHECK_URL="https://api.wordpress.org/core/version-check/1.7/"
 
 # The directory to cache download files
 export BOXCLI_DOWNLOADED_CACHE_DIR="${BOXCLI_PERSISTENT_DIR}/dl-cache"
