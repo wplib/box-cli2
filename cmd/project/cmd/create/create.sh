@@ -241,6 +241,11 @@ if ! isDryRun ; then
     #
     echo "# ${project_name}" > README.md
 
+    #
+    # Download WordPress core
+    #
+    wpFilepath="$(box util download-wordpress)"
+
 fi
 
 #
