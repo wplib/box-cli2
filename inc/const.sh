@@ -35,3 +35,5 @@ if ! [ -d "${BOXCLI_DOWNLOADED_CACHE_DIR}" ] ; then
     mkdir -p "${BOXCLI_DOWNLOADED_CACHE_DIR}"
 fi
 
+# The File Template by which to download the latest WordPress version"
+export BOXCLI_WP_DOWNLOADED_FILE_TEMPLATE="wordpress-{{version}}.tar.gz"
