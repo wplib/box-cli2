@@ -15,8 +15,15 @@ export BOXCLI_CLAUSES=()
 export BOXCLI_NESTING_DEPTH=${BOXCLI_NESTING_DEPTH:=0}
 BOXCLI_NESTING_DEPTH=$(( BOXCLI_NESTING_DEPTH + 1 ))
 
+#Find the platform. This could be much better
+if [ "$(uname)" = "Darwin" ] ; then
+    export BOXCLI_PLATFORM='macOS'
+else
+    export BOXCLI_PLATFORM='linux'
+fi
+
 #Find the ROOR_DIR for the BOX CLI source
-if [ $(uname) = "Darwin" ] ; then
+if [ "${BOXCLI_PLATFORM}" = "macOS" ] ; then
     #This only works on Mac OSX
     export BOXCLI_ROOT_DIR=$(dirname $(readlink "$0"))
 else

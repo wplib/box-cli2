@@ -2,6 +2,12 @@
 #
 # Note: params.sh also defines constants
 
+#
+# This is set in box
+#
+#export BOXCLI_PLATFORM
+
+
 export BOXCLI_BOX_VERSION="0.15.0"
 
 export BOXCLI_ROOT_DIR="$1"
