@@ -27,3 +27,9 @@ export BOXCLI_PROJECT_FILEPATH="${BOXCLI_PROJECT_FILEPATH:=""}"
 export BOXCLI_DEFAULT_LOCAL_TLD=".dev"
 
 
+# The directory to cache download files
+export BOXCLI_DOWNLOADED_CACHE_DIR="${BOXCLI_PERSISTENT_DIR}/dl-cache"
+if ! [ -d "${BOXCLI_DOWNLOADED_CACHE_DIR}" ] ; then
+    mkdir -p "${BOXCLI_DOWNLOADED_CACHE_DIR}"
+fi
+

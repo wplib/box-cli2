@@ -34,14 +34,22 @@ fi
 #
 # Create a temp directory for error handling and more
 #
-#   BOXCLI_TEMP_DIR is created and used no matter the nesting level. This is needed for passing errors up.
-#   BOXCLI_LOCAL_TMP is created for this call to box, only and it is a subdirectory of $BOXCLI_TEMP_DIR.
+#   BOXCLI_PERSISTENT_DIR
+#       This is used for caching and does not change between box sessions.
+#
+#   BOXCLI_TEMP_DIR
+#       Created for box session as subdirectory of $BOXCLI_PERSISTENT_DIR.
+#       Used no matter the box call nesting level. This is needed for
+#       passing errors up but deleted at end of box session.
+#
+#   BOXCLI_LOCAL_TMP
+#       Created for this one box call only as subdirectory of $BOXCLI_TEMP_DIR.
 #
 if (( 1 == ${BOXCLI_NESTING_DEPTH} )) ; then
     boxcliTmpDir="${TMPDIR:=/tmp/}"
-    export BOXCLI_TEMP_DIR="${boxcliTmpDir%/}/boxcli"
-    mkdir -p "${BOXCLI_TEMP_DIR}"
-    BOXCLI_TEMP_DIR="$(mktemp -d "${BOXCLI_TEMP_DIR}/XXXXX")"
+    export BOXCLI_PERSISTENT_DIR="${boxcliTmpDir%/}/boxcli"
+    mkdir -p "${BOXCLI_PERSISTENT_DIR}"
+    export BOXCLI_TEMP_DIR="$(mktemp -d "${BOXCLI_PERSISTENT_DIR}/XXXXX")"
     mkdir -p "${BOXCLI_TEMP_DIR}"
     function __boxcliCleanupBox {
         rm -rf "${BOXCLI_TEMP_DIR}"
