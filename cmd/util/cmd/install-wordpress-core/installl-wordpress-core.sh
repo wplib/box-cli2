@@ -2,16 +2,22 @@
 # Command: box util install-wordpress-core
 #
 
+project_dir="$(getSwitchValue "project_dir")"
+# @todo Test it is a valid directory
+if isEmpty "${project_dir}"; then
+    strErr "You must specify a project dir."
+    exit 1
+fi
 
-cd ~/Sites/
-rm -rf ~/Sites/test.dev/
-mkdir -p ~/Sites/test.dev/
-cd ~/Sites/test.dev/
+webroot_dir="$(getSwitchValue "webroot_dir" "${project_dir}/www")"
+# @todo Test not empty and is a valid directory
 
-project_dir="$(pwd)"
-webroot_dir="${project_dir}/www"
-core_dir="${webroot_dir}/wp"
-content_dir="${webroot_dir}/content"
+core_dir="$(getSwitchValue "core_dir" "${webroot_dir}/wp")"
+# @todo Test not empty and is a valid directory
+
+content_dir="$(getSwitchValue "content_dir" "${webroot_dir}/content")"
+# @todo Test not empty and is a valid directory
+
 
 stdOut "Downloading WordPress..."
 
@@ -55,6 +61,9 @@ tar -xzf "${wp_filepath}" -C "${wordpress_tmp_dir}"
 #
 # Ensure all our expected directories are available
 #
+mkdir -p "${project_dir}"
+mkdir -p "${project_dir}/archive"
+mkdir -p "${project_dir}/sql"
 mkdir -p "${webroot_dir}"
 mkdir -p "${core_dir}"
 mkdir -p "${content_dir}"
