@@ -202,15 +202,14 @@ JSON
 if ! isDryRun ; then
 
     #
-    # Create project and standard directories
+    # Install WordPress core
     #
-    mkdir -p "${project_dir}"
-    cd "${project_dir}"
-    mkdir -p archive
-    mkdir -p sql
-    mkdir -p "${dev_webroot_path}"
-    mkdir -p "${dev_core_path}"
-    mkdir -p "${dev_content_path}"
+    box util install-wordpress-core \
+        --project_dir="${project_dir}" \
+        --webroot_dir="${project_dir}/${dev_webroot_path}" \
+        --content_dir="${project_dir}/${dev_content_path}" \
+        --core_dir="${project_dir}/${dev_core_path}" \
+        --quiet
 
     #
     # Output HOSTNAME and IP files for Vagrantfile to read
@@ -222,7 +221,6 @@ if ! isDryRun ; then
     # Generate project.json
     #
     echo  -e "${json}"> $project_file
-
 
     #
     # Generate Vagrantfile
@@ -240,11 +238,6 @@ if ! isDryRun ; then
     # @TODO generate from a template
     #
     echo "# ${project_name}" > README.md
-
-    #
-    # Download WordPress core
-    #
-    wpFilepath="$(box util download-wordpress)"
 
 fi
 
