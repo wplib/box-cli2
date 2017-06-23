@@ -24,6 +24,7 @@ BOXCLI_VALID_SWITCHES_STR="|"
 
 export BOXCLI_IS_QUIET="*"
 export BOXCLI_IS_JSON="*"
+export BOXCLI_IS_RAW="*"
 export BOXCLI_IS_COMPOSER="*"
 export BOXCLI_IS_DRY_RUN="*"
 export BOXCLI_IS_NO_PROMPT="*"
@@ -37,15 +38,20 @@ function saveGlobalSwitches {
     boxcliSavedGlobalSwitches+=("${BOXCLI_IS_COMPOSER}")
     boxcliSavedGlobalSwitches+=("${BOXCLI_IS_DRY_RUN}")
     boxcliSavedGlobalSwitches+=("${BOXCLI_IS_NO_PROMPT}")
+    boxcliSavedGlobalSwitches+=("${BOXCLI_IS_RAW}")
 }
 
 function restoreGlobalSwitches {
-    if (( 5 == ${#boxcliSavedGlobalSwitches[@]} )) ; then
+    #
+    # When you add a new switch, increment 6 to 7...
+    #
+    if (( 6 == ${#boxcliSavedGlobalSwitches[@]} )) ; then
         BOXCLI_IS_QUIET="${boxcliSavedGlobalSwitches[0]}"
         BOXCLI_IS_JSON="${boxcliSavedGlobalSwitches[1]}"
         BOXCLI_IS_COMPOSER="${boxcliSavedGlobalSwitches[2]}"
         BOXCLI_IS_DRY_RUN="${boxcliSavedGlobalSwitches[3]}"
         BOXCLI_IS_NO_PROMPT="${boxcliSavedGlobalSwitches[4]}"
+        BOXCLI_IS_RAW="${boxcliSavedGlobalSwitches[5]}"
     fi
     boxcliSavedGlobalSwitches=()
 }
@@ -228,5 +234,9 @@ function isJSON {
 }
 function isQuiet {
     testYesNoSwitch "BOXCLI_IS_QUIET" 'quiet'
+    return $?
+}
+function isRaw {
+    testYesNoSwitch "BOXCLI_IS_RAW" 'raw'
     return $?
 }
