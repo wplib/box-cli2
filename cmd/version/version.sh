@@ -1,2 +1,8 @@
 #!/usr/bin/env bash
-echo "Box CLI version 0.1"
+
+if isRaw ; then
+    echo "${BOXCLI_VERSION}"
+else
+    echo "Box CLI version ${BOXCLI_VERSION}"
+fi
+setQuiet

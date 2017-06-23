@@ -8,6 +8,8 @@
 #export BOXCLI_PLATFORM
 
 
+export BOXCLI_VERSION="0.1"
+
 export BOXCLI_BOX_VERSION="0.15.0"
 
 export BOXCLI_ROOT_DIR="$1"
