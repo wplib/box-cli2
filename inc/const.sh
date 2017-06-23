@@ -32,7 +32,7 @@ export BOXCLI_DEFAULT_LOCAL_TLD=".dev"
 export BOXCLI_WPORG_API_VERSION_CHECK_URL="https://api.wordpress.org/core/version-check/1.7/"
 
 # The directory to cache download files
-export BOXCLI_DOWNLOADED_CACHE_DIR="${BOXCLI_PERSISTENT_DIR}/dl-cache"
+export BOXCLI_DOWNLOADED_CACHE_DIR="/tmp/boxcli/dl-cache"
 if ! [ -d "${BOXCLI_DOWNLOADED_CACHE_DIR}" ] ; then
     mkdir -p "${BOXCLI_DOWNLOADED_CACHE_DIR}"
 fi
