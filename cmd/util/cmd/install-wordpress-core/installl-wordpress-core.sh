@@ -11,12 +11,15 @@ fi
 
 webroot_dir="$(getSwitchValue "webroot_dir" "${project_dir}/www")"
 # @todo Test not empty and is a valid directory
+# @todo Ensure $webroot_dir within $project_dir
 
 core_dir="$(getSwitchValue "core_dir" "${webroot_dir}/wp")"
 # @todo Test not empty and is a valid directory
+# @todo Ensure $core_dir within $project_dir
 
 content_dir="$(getSwitchValue "content_dir" "${webroot_dir}/content")"
 # @todo Test not empty and is a valid directory
+# @todo Ensure $content_dir within $project_dir
 
 
 stdOut "Downloading WordPress..."
