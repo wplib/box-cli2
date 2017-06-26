@@ -78,10 +78,14 @@ production_domain="www.${domain_sans_ext}.com"
 dev_webroot_path="$(sanitizePath "$(getSwitchValue "webroot-path" "${dev_webroot_path:-www}")")"
 dev_core_path="$(sanitizePath "$(getSwitchValue "core-path" "${dev_core_path:-${dev_webroot_path}/wp}")")"
 dev_content_path="$(sanitizePath "$(getSwitchValue "content-path" "${dev_content_path:-${dev_webroot_path}/content}")")"
+dev_config_path="$(sanitizePath "$(getSwitchValue "config-path" "${dev_config_path:-${dev_content_path}}")")"
+dev_secrets_path="$(sanitizePath "$(getSwitchValue "secrets-path" "${dev_secrets_path:-${dev_secrets_path}/config}")")"
 
 webroot_path="${webroot_path:-}"
 core_path="${core_path:-}"
 content_path="${content_path:-wp-content}"
+config_path="${config_path:-}"
+secrets_path="${secrets_path:-}"
 
 #
 #
@@ -147,15 +151,18 @@ json="$(cat <<JSON
             "list": {
                 "${local_role}": {
                     "core_path": "${dev_core_path}",
-                    "content_path": "${dev_content_path}"
+                    "content_path": "${dev_content_path}",
+                    "config_path": "${dev_config_path}"
                 },
                 "${staging_role}": {
                     "core_path": "${core_path}",
-                    "content_path": "${content_path}"
+                    "content_path": "${content_path}",
+                    "config_path": "${config_path}"
                 },
                 "${production_role}": {
                     "core_path": "${core_path}",
-                    "content_path": "${content_path}"
+                    "content_path": "${content_path}",
+                    "config_path": "${config_path}"
                 }
             }
         }
@@ -181,14 +188,17 @@ json="$(cat <<JSON
             "${local_role}": {
                 "domain": "${local_domain}",
                 "webroot_path": "${dev_webroot_path}"
+                "secrets_path": "${dev_secrets_path}"
             },
             "${staging_role}": {
                 "domain": "${staging_domain}",
                 "webroot_path": "${webroot_path}"
+                "secrets_path": "${secrets_path}"
             },
             "${production_role}": {
                 "domain": "${production_domain}",
                 "webroot_path": "${webroot_path}"
+                "secrets_path": "${secrets_path}"
             }
         }
     }
