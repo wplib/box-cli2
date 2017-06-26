@@ -9,6 +9,9 @@ if isEmpty "${project_dir}"; then
     exit 1
 fi
 
+#
+# @TODO Get these from the project.json file
+#
 webroot_dir="$(getSwitchValue "webroot_dir" "${project_dir}/www")"
 # @todo Test not empty and is a valid directory
 # @todo Ensure $webroot_dir within $project_dir
@@ -21,11 +24,11 @@ content_dir="$(getSwitchValue "content_dir" "${project_dir}/www/content")"
 # @todo Test not empty and is a valid directory
 # @todo Ensure $content_dir within $project_dir
 
-config_dir="$(getSwitchValue "config_dir" "${project_dir}/www")"
+boot_dir="$(getSwitchValue "boot_dir" "${project_dir}/www")"
 # @todo Test not empty and is a valid directory
 # @todo Ensure $content_dir within $project_dir
 
-secrets_dir="$(getSwitchValue "secrets_dir" "${project_dir}/www/config")"
+config_dir="$(getSwitchValue "config_dir" "${project_dir}/www/config")"
 # @todo Test not empty and is a valid directory
 # @todo Ensure $content_dir within $project_dir
 
@@ -36,62 +39,62 @@ secrets_dir="$(getSwitchValue "secrets_dir" "${project_dir}/www/config")"
 #
 #   core_path is the path to core from the webroot_dir
 #   content_path is the path to plugins/themes/etc dir from the webroot_dir
-#   config_path is the path to wp-config.php from the webroot_dir
-#   config_path is the path to secrets from the webroot_dir
+#   boot_path is the path to wp-config.php from the webroot_dir
+#   boot_path is the path to secrets from the webroot_dir
 #
 # @example #1: WordPress Default
 #   $project_dir    => /{hostroot_dir}/example.dev
 #   $webroot_dir    => /{hostroot_dir}/example.dev
 #   $core_dir       => /{hostroot_dir}/example.dev
 #   $content_dir    => /{hostroot_dir}/example.dev/wp-content
+#   $boot_dir       => /{hostroot_dir}/example.dev
 #   $config_dir     => /{hostroot_dir}/example.dev
-#   $secrets_dir    => /{hostroot_dir}/example.dev
 #   $core_path      =>
 #   $content_path   => /wp-content
+#   $boot_path      => 
 #   $config_path    => 
-#   $secrets_path   => 
 #
 # @example #2: WordPress Skeleton
 #   $project_dir    => /{hostroot_dir}/example.dev
 #   $webroot_dir    => /{hostroot_dir}/example.dev/www
 #   $core_dir       => /{hostroot_dir}/example.dev/www/wp
 #   $content_dir    => /{hostroot_dir}/example.dev/www/content
-#   $config_dir     => /{hostroot_dir}/example.dev/www/
-#   $secrets_dir    => /{hostroot_dir}/example.dev/www/config
+#   $boot_dir       => /{hostroot_dir}/example.dev/www/
+#   $config_dir     => /{hostroot_dir}/example.dev/www/config
 #   $core_path      => /wp
 #   $content_path   => /content
-#   $config_path    => /
-#   $secrets_path   => /config
+#   $boot_path      => /
+#   $config_path    => /config
 #
 # @example #3: Pantheon
 #   $project_dir    => /{hostroot_dir}/example.dev
 #   $webroot_dir    => /{hostroot_dir}/example.dev/web
 #   $core_dir       => /{hostroot_dir}/example.dev/web
 #   $content_dir    => /{hostroot_dir}/example.dev/web/wp-content
-#   $config_dir     => /{hostroot_dir}/example.dev
-#   $secrets_dir    => /{hostroot_dir}/example.dev/private
+#   $boot_dir       => /{hostroot_dir}/example.dev
+#   $config_dir     => /{hostroot_dir}/example.dev/private
 #   $core_path      =>
 #   $content_path   => /wp-content
-#   $config_path    => 
-#   $secrets_path   => /private
+#   $boot_path      => 
+#   $config_path    => /private
 #
 # @example #4: WordPress default w/config outside of webroot
 #   $project_dir    => /{hostroot_dir}/example.dev
 #   $webroot_dir    => /{hostroot_dir}/example.dev
 #   $core_dir       => /{hostroot_dir}/example.dev
 #   $content_dir    => /{hostroot_dir}/example.dev/wp-content
-#   $config_dir     => /{hostroot_dir}
-#   $secrets_dir    => /{hostroot_dir}/config
+#   $boot_dir       => /{hostroot_dir}
+#   $config_dir     => /{hostroot_dir}/config
 #   $core_path      =>
 #   $content_path   => /wp-content
-#   $config_path    => /..
-#   $secrets_path   => /../config
+#   $boot_path      => /..
+#   $config_path    => /../config
 #
 
 core_path="${core_dir#$webroot_dir}"
 content_path="${content_dir#$webroot_dir}"
+boot_path="$(getRelativePath "${webroot_dir}" "${boot_dir}")"
 config_path="$(getRelativePath "${webroot_dir}" "${config_dir}")"
-secrets_path="$(getRelativePath "${webroot_dir}" "${secrets_dir}")"
 
 stdOut "Downloading WordPress..."
 
@@ -158,10 +161,93 @@ wordpress_dir="${wordpress_tmp_dir}/wordpress"
 #
 
 #
-# Copy the root files to the root
-# @todo These will need to be modifies and/or replaced
+# Create the index.php in webroot
 #
-mv "${wordpress_dir}/index.php" "${webroot_dir}"
+php="$(cat <<PHP
+<?php
+/**
+ * Front to the WordPress application. This file doesn't do anything, but loads
+ * wp-blog-header.php which does and tells WordPress to load the theme.
+ *
+ * @package WordPress
+ */
+
+/**
+ * Tells WordPress to load the WordPress theme and output it.
+ *
+ * @var bool
+ */
+define( 'WP_USE_THEMES', true );
+
+/**
+ * Loads the WordPress Environment and Template
+ * Note: The following filepath my be modified from WordPress
+ *       core to support an optionally different ABSPATH.
+ */
+require( __DIR__ . '${core_path}/wp-blog-header.php' );
+PHP
+)"
+echo "${php}" > ${webroot_dir}/index.php
+
+#
+# Create the config-loader.php in webroot
+#
+cp "${BOXCLI_COMMAND_DIR}/files/config-loader.php" "${webroot_dir}"
+
+#
+# @TODO generate a salt file for wp-config.php to load
+# https://api.wordpress.org/secret-key/1.1/salt/
+#
+
+echo "${content_path}" > "${webroot_dir}/CONTENT_PATH"
+
+#
+# Create the config-{hostname}.php in config_dir
+# @TODO Loop through and generate one for each server
+# @TODO Extract this into a standalone command
+# @TODO Create a default one of these and load it first
+#
+php="$(cat <<PHP
+<?php
+
+return array(
+	'WP_DEBUG' =>           '${wp_debug}',
+
+	'CORE_PATH' =>          realpath( '${core_path}' ),
+	'BOOT_PATH' =>          realpath( '${boot_path}' ),
+	'CONTENT_PATH' =>       realpath( '${content_path}' ),
+	'CONFIG_PATH' =>        realpath( '${config_path}' ),
+	
+    'CORE_DIR' =>           realpath( '${core_dir}' ),
+	'BOOT_DIR' =>           realpath( '${boot_dir}' ),
+	'CONTENT_DIR' =>        realpath( '${content_dir}' ),
+	'CONFIG_DIR' =>         realpath( '${config_dir}' ),
+
+	'WP_HOME' =>            '${wp_home}',
+	'WP_SITEURL' =>         '${wp_siteurl}',
+	'WP_CONTENT_DIR' =>     '${content_dir}',
+	'WP_CONTENT_URL' =>     '${wp_content_url}',
+	
+	'DB_NAME' =>            '${db_name}',
+	'DB_USER' =>            '${db_user}',
+	'DB_PASSWORD' =>        '${db_password}',
+	'DB_HOST' =>            '${db_host}',
+	'DB_CHARSET' =>         '${db_charset}',
+	'DB_COLLATE' =>         '${db_collate}',
+	
+	'DISALLOW_FILE_EDIT' => '${disallow_file_edit}',
+	
+	'TABLE_PREFIX' =>        '${table_prefix}',
+	
+);
+PHP
+)"
+echo "${php}" > ${webroot_dir}/config-values.php
+
+
+#
+# Copy the root files to the root
+#
 mv "${wordpress_dir}/wp-config-sample.php" "${webroot_dir}"
 
 #
