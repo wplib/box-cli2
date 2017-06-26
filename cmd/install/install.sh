@@ -4,7 +4,7 @@
 # File: install.sh
 #
 
-installable="${BOXCLI_PATH}/installables/install-$1.sh"
+installable="${BOXCLI_COMMAND_DIR}/installables/install-$1.sh"
 if [ ! -f "${installable}" ] ; then
 	stdErr "$1 is not a valid installable."
 else 
