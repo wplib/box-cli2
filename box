@@ -92,13 +92,13 @@ __command="${1:-}"
 __args=()
 __argNames=()
 __argNum=0
-__path="${BOXCLI_ROOT_DIR}"
+__dir="${BOXCLI_ROOT_DIR}"
 if (( 0 < "${#BOXCLI_CLAUSES[@]}" )) ; then
     for clause in "${BOXCLI_CLAUSES[@]}" ; do
-        __testdir="${__path}/cmd"
+        __testdir="${__dir}/cmd"
         if ! [ -d "${__testdir}" ] ; then
             # If we don't have a command but we have an args
-            __testdir="${__path}/args"
+            __testdir="${__dir}/args"
             if ! [ -d "${__testdir}" ] ; then
                 stdErr "Arguments not allowed."
                 break
@@ -124,19 +124,19 @@ if (( 0 < "${#BOXCLI_CLAUSES[@]}" )) ; then
             continue
         fi
         __filepath=""
-        __testdir="${__path}/cmd/${clause}"
+        __testdir="${__dir}/cmd/${clause}"
         if [ -d "${__testdir}" ] ; then
-            __path="${__testdir}"
+            __dir="${__testdir}"
             __filepath="${__testdir}/${clause}.sh"
             shift # remove command name from "$@"
             continue
         fi
-        for alias in $__path/cmd/* ; do
+        for alias in $__dir/cmd/* ; do
            __testdir="${alias}/alias/${clause}"
             if [ -f "${__testdir}" ] ; then
                 segment=$(basename "${alias}")
-                __path="${__path}/cmd/${segment}"
-                __filepath="${__path}/cmd/${segment}/${segment}.sh"
+                __dir="${__dir}/cmd/${segment}"
+                __filepath="${__dir}/cmd/${segment}/${segment}.sh"
                 __valid=1
                 shift # remove command name from "$@"i
                 break
@@ -153,8 +153,8 @@ if (( 0 < "${#BOXCLI_CLAUSES[@]}" )) ; then
     #printf '%s\n' "${__argNames[@]}"
     #printf '%s\n' "${__args[@]}"
 
-    BOXCLI_PATH="${__path}"
-    BOXCLI_SCRIPT="${__filepath}"
+    BOXCLI_COMMAND_DIR="${__dir}"
+    BOXCLI_COMMAND_FILE="${__filepath}"
     BOXCLI_ARGCOUNT=("${#__args[@]}")
 
     if (( 0 == "${#__args[@]}" )) ; then
