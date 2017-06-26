@@ -400,3 +400,68 @@ function popTmpDir {
     popDir
     rm -rf "$1"
 }
+function max {
+    if [ $1 -gt $2 ] ; then
+        echo $1
+    else
+        echo $2
+    fi
+}
+function min {
+    if [ $1 -lt $2 ] ; then
+        echo $1
+    else
+        echo $2
+    fi
+}
+
+#
+# Returns the relative path from $fromPath to $toPath
+#
+# Use a binary search of the two strings
+#
+# @example:
+#
+#   fromPath:       /hostroot/example.dev/web/blog
+#   toPath:         /hostroot/example.dev/config/secrets
+#   relativePath:   ../../config/secrets
+#
+function getRelativePath() {
+    local fromDir="${1%/}"  # trim trailing slashes
+    local toDir="${2%/}"    # trim trailing slashes
+
+    local fromCount="${#fromDir}"
+    local toCount="${#toDir}"
+    local maxPtr=$(min $fromCount $toCount)
+    local minPtr=0
+    local delta
+    local index
+    i=0
+    while :; do
+        index=$(($(($((maxPtr-minPtr))/2))+minPtr))
+        fromTst="${fromDir:0:$index}"
+        toTst="${toDir:0:$index}"
+        if [ "${fromTst}" = "${toTst}" ] ; then
+            minPtr=$((index))
+        else
+            maxPtr=$((index))
+        fi
+        if [[ $index -eq $minPtr && $((minPtr+1)) -eq $maxPtr ]] ; then
+            ((maxPtr--))
+        fi
+        if [ $minPtr -eq $maxPtr ] ; then
+            fromPath="${fromDir:$index}"
+            toPath="${toDir:$index}"
+            break
+        fi
+        ((i++))
+    done
+    local slashes="${fromPath//[^\/]}"
+    #
+    # Assumes fromPaths does not have a leading slash (/)
+    #
+    local segs=$((${#slashes}+1))
+    local prefix="$(eval printf "%0.s/.." {1..$segs})"
+    local relPath="${prefix}/${toPath}"
+    echo $relPath
+}
