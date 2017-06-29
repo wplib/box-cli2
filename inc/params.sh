@@ -88,9 +88,37 @@ function getSwitchValue {
     echo "${value}"
 }
 
+#
+# Return 0 (true) if switch provided on command line.
+#
+# Usage:  if isSwitch "foo" ; then echo 'foo' fi
+#
+function isSwitch {
+    local switch="$1"
+    if [ "" == "${BOXCLI_SWITCHES_STR}" ] ; then
+        return 1
+    fi
+    if [[ "${BOXCLI_SWITCHES_STR}" =~ "|${switch}|" ]] ; then
+        return 0
+    fi
+    return 1
+}
+
+#
+# Tests to see if a switch has been set on command line.
+#
+# Caches in a variable.
+#
+# @todo Rename this function and cache
+#       without needing a variable
+#
 function testYesNoSwitch {
     local varName="$1"
     local switch="$2"
+    #
+    # "*" is a flag character to indicate switch not set
+    # See below for comparison to "*"
+    #
     if [ "*" != "${!varName}" ] ; then
         if [ "yes" == "${!varName}" ] ; then
             eval $varName='yes'
@@ -99,23 +127,13 @@ function testYesNoSwitch {
         eval $varName='no'
         return 1
     else
-        if [ "" == "${BOXCLI_SWITCHES_STR}" ] ; then
-            #
-            # "!" is a flag character to indicate switch not set
-            # See below for comparison to "!"
-            #
-            eval $varName='no'
-            return 1
-        else
-            if [[ "${BOXCLI_SWITCHES_STR}" =~ "|${switch}|" ]] ; then
-                eval $varName='yes'
-                return 0
-            fi
-            eval $varName='no'
-            return 1
+        if isSwitch "${switch}" ; then
+            eval $varName='yes'
+            return 0
         fi
+        eval $varName='no'
+        return 1
     fi
-
 }
 
 function __boxProcessCmdLine {
@@ -161,6 +179,9 @@ function __boxProcessCmdLine {
                     __val="${__arg#*=}"
                     __arg="${__arg%=*}"
                 fi
+#                echo "${__cmdPath}"
+#                echo "${BOXCLI_VALID_SWITCHES_STR}"
+#                exit
                 if ! [[ "${BOXCLI_VALID_SWITCHES_STR}" =~ "|${__arg}|" ]] ; then
                     stdErr "Invalid switch --${__arg}"
                     exit 1
