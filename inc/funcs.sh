@@ -258,6 +258,12 @@ function getProjectFilePath {
     echo "${project_filepath}"
 }
 
+function getProjectName {
+    local project_name="$(box util get-project-info '.name')"
+    hasError && exit 1
+    echo "${project_name}"
+}
+
 function findProjectFilePath {
     echo "$(box util find-project-filepath)"
 }
