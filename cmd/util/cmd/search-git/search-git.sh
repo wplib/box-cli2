@@ -1,5 +1,5 @@
 #
-# Installable Command: box util move-to-project-dir <source_file> 
+# Installable Command: box util search-git <pattern>
 #
 
 pattern="$1"
