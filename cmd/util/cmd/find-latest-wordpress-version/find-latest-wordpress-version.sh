@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 #
 # Command: box util find-latest-wordpress-version
 #
